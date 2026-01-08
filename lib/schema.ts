@@ -85,7 +85,7 @@ export const products = pgTable('products', {
 export const quotes = pgTable('quotes', {
     id: serial('id').primaryKey(),
     user_id: text('user_id'), // No FK - managed at app level
-    quote_number: text('quote_number').notNull().unique(),
+    quote_number: text('quote_number').notNull(),
     customer_name: text('customer_name').notNull(),
     customer_email: text('customer_email'),
     customer_phone: text('customer_phone'),
@@ -115,7 +115,7 @@ export const quoteItems = pgTable('quote_items', {
 export const orders = pgTable('orders', {
     id: serial('id').primaryKey(),
     user_id: text('user_id'), // No FK - managed at app level
-    order_number: text('order_number').notNull().unique(),
+    order_number: text('order_number').notNull(),
     quote_id: integer('quote_id').references(() => quotes.id),
     customer_name: text('customer_name').notNull(),
     customer_email: text('customer_email'),
