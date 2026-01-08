@@ -1,0 +1,28 @@
+
+> quote-master@0.1.0 build D:\my-apps\quotegen-master
+> next build
+
+鈻?Next.js 16.1.1 (Turbopack)
+
+  Creating an optimized production build ...
+鉁?Compiled successfully in 2.7s
+  Running TypeScript ...
+  Collecting page data using 23 workers ...
+  Generating static pages using 23 workers (0/13) ...
+  Generating static pages using 23 workers (3/13) 
+  Generating static pages using 23 workers (6/13) 
+猕?useSearchParams() should be wrapped in a suspense boundary at page "/products". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at Q (D:\my-apps\quotegen-master\.next\server\chunks\ssr\befc6_next_f99910e9._.js:2:2111)
+    at o (D:\my-apps\quotegen-master\.next\server\chunks\ssr\befc6_next_f99910e9._.js:4:5284)
+    at l (D:\my-apps\quotegen-master\.next\server\chunks\ssr\_9bb33c6c._.js:1:8231)
+    at an (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:84360)
+    at ai (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:86179)
+    at al (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:107953)
+    at as (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:105368)
+    at aa (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:84712)
+    at ai (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:86228)
+    at ai (D:\my-apps\quotegen-master\node_modules\.pnpm\next@16.1.1_@babel+core@7.2_39b5f7bf9254f45631682e0d132e5fc2\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:104708)
+Error occurred prerendering page "/products". Read more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on /products/page: /products, exiting the build.
+猕?Next.js build worker exited with code: 1 and signal: null
+鈥塃LIFECYCLE鈥?Command failed with exit code 1.
