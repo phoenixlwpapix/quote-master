@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Save, Building2, Mail, Phone, MapPin, Globe, FileText, CheckCircle } from 'lucide-react';
+import { Save, Building2, Mail, Phone, MapPin, Globe, FileText, CheckCircle, RefreshCw } from 'lucide-react';
+import { PageSkeleton, Skeleton } from '@/components/Skeleton';
+import { useSettings, useUpdateSettings } from '@/hooks/use-queries';
 import type { CompanySettings } from '@/lib/types';
 
 export default function SettingsPage() {
-    const [settings, setSettings] = useState<CompanySettings | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -21,75 +20,61 @@ export default function SettingsPage() {
         footer_text: '',
     });
 
-    useEffect(() => {
-        fetchSettings();
-    }, []);
+    // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
+    const { data: settings, isLoading, isFetching, refetch } = useSettings();
+    const updateSettingsMutation = useUpdateSettings();
 
-    const fetchSettings = async () => {
-        try {
-            const res = await fetch('/api/settings');
-            const data = await res.json();
-            setSettings(data);
+    // 当设置数据加载完成后，更新表单
+    useEffect(() => {
+        if (settings) {
             setFormData({
-                company_name: data.company_name || '',
-                company_email: data.company_email || '',
-                company_phone: data.company_phone || '',
-                company_address: data.company_address || '',
-                company_website: data.company_website || '',
-                tax_id: data.tax_id || '',
-                logo_url: data.logo_url || '',
-                footer_text: data.footer_text || '',
+                company_name: settings.company_name || '',
+                company_email: settings.company_email || '',
+                company_phone: settings.company_phone || '',
+                company_address: settings.company_address || '',
+                company_website: settings.company_website || '',
+                tax_id: settings.tax_id || '',
+                logo_url: settings.logo_url || '',
+                footer_text: settings.footer_text || '',
             });
-        } catch (error) {
-            console.error('Error fetching settings:', error);
-        } finally {
-            setLoading(false);
         }
-    };
+    }, [settings]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setSaving(true);
         setSaved(false);
 
         try {
-            const res = await fetch('/api/settings', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setSettings(data);
-                setSaved(true);
-                setTimeout(() => setSaved(false), 3000);
-            } else {
-                const error = await res.json();
-                alert(error.error || 'Failed to save settings');
-            }
+            await updateSettingsMutation.mutateAsync(formData);
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             console.error('Error saving settings:', error);
             alert('Failed to save settings');
-        } finally {
-            setSaving(false);
         }
     };
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-slate-400">Loading...</div>
-            </div>
-        );
+    // 显示骨架屏直到数据加载完成
+    if (isLoading) {
+        return <PageSkeleton />;
     }
 
     return (
         <div className="space-y-6 animate-fade-in max-w-3xl">
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-white">Settings</h1>
-                <p className="text-slate-400 mt-1">Configure your company information for quotes and orders</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-white">Settings</h1>
+                    <p className="text-slate-400 mt-1">Configure your company information for quotes and orders</p>
+                </div>
+                <button
+                    onClick={() => refetch()}
+                    disabled={isFetching}
+                    className="btn btn-secondary"
+                    title="Refresh settings"
+                >
+                    <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
+                </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -288,9 +273,9 @@ export default function SettingsPage() {
                                 Settings saved!
                             </span>
                         )}
-                        <button type="submit" className="btn btn-primary" disabled={saving}>
+                        <button type="submit" className="btn btn-primary" disabled={updateSettingsMutation.isPending}>
                             <Save size={18} />
-                            {saving ? 'Saving...' : 'Save Settings'}
+                            {updateSettingsMutation.isPending ? 'Saving...' : 'Save Settings'}
                         </button>
                     </div>
                 </div>

@@ -84,3 +84,9 @@ export const customersAPI = {
 export const categoriesAPI = {
     getAll: () => fetchAPI('/api/categories'),
 };
+
+// Settings
+export const settingsAPI = {
+    get: () => fetchAPI('/api/settings'),
+    update: (data: unknown) => putAPI('/api/settings', data),
+};

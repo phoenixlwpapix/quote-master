@@ -218,3 +218,26 @@ export function useCategories(initialData?: Category[]) {
         initialData,
     });
 }
+
+// Settings Hooks
+import { settingsAPI } from '@/lib/api';
+import type { CompanySettings } from '@/lib/types';
+
+export const settingsQueryKey = ['settings'] as const;
+
+export function useSettings() {
+    return useQuery({
+        queryKey: settingsQueryKey,
+        queryFn: () => settingsAPI.get() as Promise<CompanySettings>,
+    });
+}
+
+export function useUpdateSettings() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: settingsAPI.update,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: settingsQueryKey });
+        },
+    });
+}

@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Building2, Mail, Phone } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, Edit2, Trash2, Building2, Mail, Phone, RefreshCw } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
+import { PageSkeleton } from '@/components/Skeleton';
+import { useCustomers, useCreateCustomer, useUpdateCustomer, useDeleteCustomer } from '@/hooks/use-queries';
 import type { Customer } from '@/lib/types';
 
 export default function CustomersPage() {
-    const [customers, setCustomers] = useState<Customer[]>([]);
-    const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
-    const [deleting, setDeleting] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -25,44 +24,25 @@ export default function CustomersPage() {
         notes: '',
     });
 
-    useEffect(() => {
-        fetchCustomers();
-    }, []);
-
-    const fetchCustomers = async () => {
-        try {
-            const res = await fetch('/api/customers');
-            const data = await res.json();
-            setCustomers(data);
-        } catch (error) {
-            console.error('Error fetching customers:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
+    const { data: customers = [], isLoading, isFetching, refetch } = useCustomers();
+    const createCustomerMutation = useCreateCustomer();
+    const updateCustomerMutation = useUpdateCustomer();
+    const deleteCustomerMutation = useDeleteCustomer();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         try {
             if (editingCustomer) {
-                await fetch(`/api/customers/${editingCustomer.id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData),
-                });
+                await updateCustomerMutation.mutateAsync({ id: editingCustomer.id, data: formData });
             } else {
-                await fetch('/api/customers', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData),
-                });
+                await createCustomerMutation.mutateAsync(formData);
             }
 
             setIsModalOpen(false);
             setEditingCustomer(null);
             resetForm();
-            fetchCustomers();
         } catch (error) {
             console.error('Error saving customer:', error);
         }
@@ -88,15 +68,12 @@ export default function CustomersPage() {
 
     const handleDelete = async () => {
         if (!deletingId) return;
-        setDeleting(true);
 
         try {
-            await fetch(`/api/customers/${deletingId}`, { method: 'DELETE' });
-            fetchCustomers();
+            await deleteCustomerMutation.mutateAsync(deletingId);
         } catch (error) {
             console.error('Error deleting customer:', error);
         } finally {
-            setDeleting(false);
             setDeleteModalOpen(false);
             setDeletingId(null);
         }
@@ -191,12 +168,11 @@ export default function CustomersPage() {
         },
     ];
 
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-slate-400">Loading...</div>
-            </div>
-        );
+    const isSaving = createCustomerMutation.isPending || updateCustomerMutation.isPending;
+
+    // 显示骨架屏直到数据加载完成
+    if (isLoading) {
+        return <PageSkeleton />;
     }
 
     return (
@@ -207,11 +183,26 @@ export default function CustomersPage() {
                     <h1 className="text-3xl font-bold text-white">Customers</h1>
                     <p className="text-slate-400 mt-1">Manage your customer database</p>
                 </div>
-                <button onClick={openNewModal} className="btn btn-primary">
-                    <Plus size={18} />
-                    Add Customer
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => refetch()}
+                        disabled={isFetching}
+                        className="btn btn-secondary"
+                        title="Refresh data"
+                    >
+                        <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
+                    </button>
+                    <button onClick={openNewModal} className="btn btn-primary">
+                        <Plus size={18} />
+                        Add Customer
+                    </button>
+                </div>
             </div>
+
+            {/* Fetching indicator */}
+            {isFetching && !isLoading && (
+                <div className="text-slate-400 text-sm">Updating...</div>
+            )}
 
             {/* Customers Table */}
             <DataTable
@@ -319,8 +310,8 @@ export default function CustomersPage() {
                         >
                             Cancel
                         </button>
-                        <button type="submit" className="btn btn-primary">
-                            {editingCustomer ? 'Update' : 'Create'} Customer
+                        <button type="submit" className="btn btn-primary" disabled={isSaving}>
+                            {isSaving ? 'Saving...' : (editingCustomer ? 'Update' : 'Create')} Customer
                         </button>
                     </div>
                 </form>
@@ -335,7 +326,7 @@ export default function CustomersPage() {
                 message="Are you sure you want to delete this customer? This action cannot be undone."
                 confirmText="Delete"
                 variant="danger"
-                loading={deleting}
+                loading={deleteCustomerMutation.isPending}
             />
         </div>
     );
