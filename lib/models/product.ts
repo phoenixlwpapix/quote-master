@@ -80,6 +80,7 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
 
   return {
     ...result[0],
+    product_type: result[0].product_type as "solution" | "oem_kit",
     created_at: result[0].created_at?.toISOString() ?? new Date().toISOString(),
     updated_at: result[0].updated_at?.toISOString() ?? new Date().toISOString(),
     category_name: undefined,
