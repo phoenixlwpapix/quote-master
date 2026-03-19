@@ -69,6 +69,8 @@ export interface Quote {
     subtotal: number;
     discount_percent: number;
     discount_amount: number;
+    shipping_fee: number;
+    incoterm: string | null;
     total: number;
     notes: string | null;
     valid_until: string | null;
@@ -119,6 +121,8 @@ export interface CreateQuoteInput {
     customer_phone?: string;
     customer_address?: string;
     discount_percent?: number;
+    shipping_fee?: number;
+    incoterm?: string;
     notes?: string;
     valid_until?: string;
     items: Omit<QuoteItem, 'id' | 'quote_id' | 'line_total'>[];

@@ -9,6 +9,8 @@ import { requireUserId } from '../auth/get-user';
 function mapQuote(row: typeof quotes.$inferSelect): Quote {
     return {
         ...row,
+        shipping_fee: row.shipping_fee ?? 0,
+        incoterm: row.incoterm ?? null,
         created_at: row.created_at?.toISOString() ?? new Date().toISOString(),
         updated_at: row.updated_at?.toISOString() ?? new Date().toISOString(),
         valid_until: row.valid_until ?? null,
@@ -111,7 +113,8 @@ export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
 
     const discountPercent = input.discount_percent || 0;
     const discountAmount = subtotal * (discountPercent / 100);
-    const total = subtotal - discountAmount;
+    const shippingFee = input.shipping_fee ?? 0;
+    const total = subtotal - discountAmount + shippingFee;
 
     const quoteNumber = await generateQuoteNumber(userId);
 
@@ -126,6 +129,8 @@ export async function createQuote(input: CreateQuoteInput): Promise<Quote> {
             subtotal,
             discount_percent: discountPercent,
             discount_amount: discountAmount,
+            shipping_fee: shippingFee,
+            incoterm: input.incoterm ?? null,
             total,
             notes: input.notes ?? null,
             valid_until: input.valid_until ?? null,
@@ -170,7 +175,8 @@ export async function updateQuote(id: number, input: UpdateQuoteInput): Promise<
 
             const discountPercent = input.discount_percent ?? existing.discount_percent;
             const discountAmount = subtotal * (discountPercent / 100);
-            const total = subtotal - discountAmount;
+            const shippingFee = input.shipping_fee ?? existing.shipping_fee;
+            const total = subtotal - discountAmount + shippingFee;
 
             await tx.update(quotes).set({
                 customer_name: input.customer_name ?? existing.customer_name,
@@ -180,6 +186,8 @@ export async function updateQuote(id: number, input: UpdateQuoteInput): Promise<
                 subtotal,
                 discount_percent: discountPercent,
                 discount_amount: discountAmount,
+                shipping_fee: shippingFee,
+                incoterm: input.incoterm !== undefined ? (input.incoterm ?? null) : existing.incoterm,
                 total,
                 notes: input.notes ?? existing.notes,
                 valid_until: input.valid_until ?? existing.valid_until,
@@ -204,7 +212,8 @@ export async function updateQuote(id: number, input: UpdateQuoteInput): Promise<
             // Just update non-item fields
             const discountPercent = input.discount_percent ?? existing.discount_percent;
             const discountAmount = existing.subtotal * (discountPercent / 100);
-            const total = existing.subtotal - discountAmount;
+            const shippingFee = input.shipping_fee ?? existing.shipping_fee;
+            const total = existing.subtotal - discountAmount + shippingFee;
 
             await tx.update(quotes).set({
                 customer_name: input.customer_name ?? existing.customer_name,
@@ -213,6 +222,8 @@ export async function updateQuote(id: number, input: UpdateQuoteInput): Promise<
                 customer_address: input.customer_address ?? existing.customer_address,
                 discount_percent: discountPercent,
                 discount_amount: discountAmount,
+                shipping_fee: shippingFee,
+                incoterm: input.incoterm !== undefined ? (input.incoterm ?? null) : existing.incoterm,
                 total,
                 notes: input.notes ?? existing.notes,
                 valid_until: input.valid_until ?? existing.valid_until,

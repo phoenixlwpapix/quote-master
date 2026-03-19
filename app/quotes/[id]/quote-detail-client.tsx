@@ -266,6 +266,12 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                                     <span>-{formatCurrency(quote.discount_amount)}</span>
                                 </div>
                             )}
+                            {quote.shipping_fee > 0 && (
+                                <div className="flex justify-between text-blue-400">
+                                    <span>Shipping Fee{quote.incoterm ? ` (${quote.incoterm})` : ''}</span>
+                                    <span>+{formatCurrency(quote.shipping_fee)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-lg font-bold text-white border-t border-slate-700 pt-2">
                                 <span>Total</span>
                                 <span className="text-brand-400">{formatCurrency(quote.total)}</span>

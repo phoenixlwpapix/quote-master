@@ -35,6 +35,8 @@ export async function PUT(
         if (body.customer_phone !== undefined) updateData.customer_phone = body.customer_phone?.trim();
         if (body.customer_address !== undefined) updateData.customer_address = body.customer_address?.trim();
         if (body.discount_percent !== undefined) updateData.discount_percent = parseFloat(body.discount_percent);
+        if (body.shipping_fee !== undefined) updateData.shipping_fee = parseFloat(body.shipping_fee);
+        if (body.incoterm !== undefined) updateData.incoterm = body.incoterm?.trim() || null;
         if (body.notes !== undefined) updateData.notes = body.notes?.trim();
         if (body.valid_until !== undefined) updateData.valid_until = body.valid_until;
         if (body.status) updateData.status = body.status;

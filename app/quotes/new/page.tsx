@@ -36,6 +36,8 @@ export default function NewQuotePage() {
         customer_phone: '',
         customer_address: '',
         discount_percent: 0,
+        shipping_fee: 0,
+        incoterm: '',
         notes: '',
         valid_until: '',
     });
@@ -160,7 +162,7 @@ export default function NewQuotePage() {
     };
 
     const calculateTotal = () => {
-        return calculateSubtotal() - calculateDiscount();
+        return calculateSubtotal() - calculateDiscount() + (formData.shipping_fee || 0);
     };
 
     const formatCurrency = (value: number) => {
@@ -580,6 +582,54 @@ export default function NewQuotePage() {
                                 <div className="flex justify-between text-red-400">
                                     <span>Discount</span>
                                     <span>-{formatCurrency(calculateDiscount())}</span>
+                                </div>
+                            )}
+                            {/* Shipping Fee */}
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <span className="text-slate-300 whitespace-nowrap">Shipping Fee</span>
+                                    <select
+                                        value={formData.incoterm}
+                                        onChange={(e) => setFormData({ ...formData, incoterm: e.target.value })}
+                                        className="text-xs py-1 px-2 w-28"
+                                    >
+                                        <option value="">No Incoterm</option>
+                                        <option value="EXW">EXW</option>
+                                        <option value="FCA">FCA</option>
+                                        <option value="CPT">CPT</option>
+                                        <option value="CIP">CIP</option>
+                                        <option value="DAP">DAP</option>
+                                        <option value="DPU">DPU</option>
+                                        <option value="DDP">DDP</option>
+                                        <option value="FAS">FAS</option>
+                                        <option value="FOB">FOB</option>
+                                        <option value="CFR">CFR</option>
+                                        <option value="CIF">CIF</option>
+                                        <option value="custom">Custom…</option>
+                                    </select>
+                                    {formData.incoterm === 'custom' && (
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. CIP Shanghai"
+                                            className="text-xs py-1 px-2 w-32"
+                                            onChange={(e) => setFormData({ ...formData, incoterm: e.target.value })}
+                                        />
+                                    )}
+                                </div>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={formData.shipping_fee}
+                                    onChange={(e) => setFormData({ ...formData, shipping_fee: parseFloat(e.target.value) || 0 })}
+                                    className="w-24 text-right"
+                                    placeholder="0.00"
+                                />
+                            </div>
+                            {formData.shipping_fee > 0 && (
+                                <div className="flex justify-between text-blue-400">
+                                    <span>Shipping{formData.incoterm && formData.incoterm !== 'custom' ? ` (${formData.incoterm})` : ''}</span>
+                                    <span>+{formatCurrency(formData.shipping_fee)}</span>
                                 </div>
                             )}
                             <div className="border-t border-slate-700 pt-3">

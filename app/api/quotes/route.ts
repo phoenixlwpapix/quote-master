@@ -48,6 +48,8 @@ export async function POST(request: NextRequest) {
             customer_phone: body.customer_phone?.trim(),
             customer_address: body.customer_address?.trim(),
             discount_percent: body.discount_percent ? parseFloat(body.discount_percent) : 0,
+            shipping_fee: body.shipping_fee ? parseFloat(body.shipping_fee) : 0,
+            incoterm: body.incoterm?.trim() || undefined,
             notes: body.notes?.trim(),
             valid_until: body.valid_until,
             items: body.items.map((item: { product_id: number; product_name: string; product_sku: string; unit_price: number; quantity: number }) => ({

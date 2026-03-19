@@ -284,6 +284,12 @@ export async function GET(
         <div class="totals-value">-${formatCurrency(quote.discount_amount)}</div>
       </div>
       ` : ''}
+      ${quote.shipping_fee > 0 ? `
+      <div class="totals-row" style="color:#2563eb;">
+        <div class="totals-label">Shipping Fee${quote.incoterm ? ` (${quote.incoterm})` : ''}</div>
+        <div class="totals-value">+${formatCurrency(quote.shipping_fee)}</div>
+      </div>
+      ` : ''}
       <div class="totals-row total">
         <div class="totals-label">Total</div>
         <div class="totals-value">${formatCurrency(quote.total)}</div>

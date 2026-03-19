@@ -107,6 +107,8 @@ export const quotes = pgTable('quotes', {
     discount_percent: doublePrecision('discount_percent').default(0).notNull(),
     discount_amount: doublePrecision('discount_amount').default(0).notNull(),
     total: doublePrecision('total').notNull(),
+    shipping_fee: doublePrecision('shipping_fee').default(0).notNull(),
+    incoterm: text('incoterm'),
     notes: text('notes'),
     valid_until: text('valid_until'),
     status: text('status').default('draft'),
