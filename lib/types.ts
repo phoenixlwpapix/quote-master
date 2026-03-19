@@ -16,6 +16,9 @@ export interface Customer {
     created_at: string;
     updated_at: string;
     contacts?: Contact[];
+    contact_count?: number;
+    quote_count?: number;
+    order_count?: number;
 }
 
 export interface Contact {
@@ -38,6 +41,7 @@ export type UpdateContactInput = Partial<CreateContactInput>;
 
 export interface Product {
     id: number;
+    product_type: 'solution' | 'oem_kit';
     sku: string;
     name: string;
     description: string | null;

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { db } from '../db';
 import { customers } from '../schema';
-import { eq, asc, like, or, and } from 'drizzle-orm';
+import { eq, asc, like, or, and, sql } from 'drizzle-orm';
 import type { Customer, CreateCustomerInput, UpdateCustomerInput } from '../types';
 import { requireUserId } from '../auth/get-user';
 
@@ -16,14 +16,43 @@ function mapCustomer(c: typeof customers.$inferSelect): Customer {
     };
 }
 
+const withCountsSelect = (userId: string) => ({
+    id: customers.id,
+    user_id: customers.user_id,
+    name: customers.name,
+    address: customers.address,
+    website: customers.website,
+    industry: customers.industry,
+    notes: customers.notes,
+    created_at: customers.created_at,
+    updated_at: customers.updated_at,
+    contact_count: sql<number>`(SELECT COUNT(*)::int FROM contacts WHERE contacts.customer_id = ${customers.id})`,
+    quote_count: sql<number>`(SELECT COUNT(*)::int FROM quotes WHERE quotes.customer_name = ${customers.name} AND quotes.user_id = ${userId})`,
+    order_count: sql<number>`(SELECT COUNT(*)::int FROM orders WHERE orders.customer_name = ${customers.name} AND orders.user_id = ${userId})`,
+});
+
+function mapCustomerWithCounts(r: {
+    id: number; user_id: string | null; name: string; address: string | null;
+    website: string | null; industry: string | null; notes: string | null;
+    created_at: Date | null; updated_at: Date | null;
+    contact_count: number; quote_count: number; order_count: number;
+}): Customer {
+    return {
+        ...mapCustomer(r),
+        contact_count: Number(r.contact_count),
+        quote_count: Number(r.quote_count),
+        order_count: Number(r.order_count),
+    };
+}
+
 export async function getAllCustomers(): Promise<Customer[]> {
     const userId = await requireUserId();
 
-    const result = await db.select()
+    const result = await db.select(withCountsSelect(userId))
         .from(customers)
         .where(eq(customers.user_id, userId))
         .orderBy(asc(customers.name));
-    return result.map(mapCustomer);
+    return result.map(mapCustomerWithCounts);
 }
 
 export async function getCustomerById(id: number): Promise<Customer | undefined> {
@@ -81,7 +110,7 @@ export async function searchCustomers(query: string): Promise<Customer[]> {
     const userId = await requireUserId();
     const searchTerm = `%${query}%`;
 
-    const result = await db.select()
+    const result = await db.select(withCountsSelect(userId))
         .from(customers)
         .where(and(
             eq(customers.user_id, userId),
@@ -93,5 +122,5 @@ export async function searchCustomers(query: string): Promise<Customer[]> {
         ))
         .orderBy(asc(customers.name));
 
-    return result.map(mapCustomer);
+    return result.map(mapCustomerWithCounts);
 }

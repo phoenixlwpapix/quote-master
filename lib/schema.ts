@@ -86,6 +86,7 @@ export const contacts = pgTable('contacts', {
 export const products = pgTable('products', {
     id: serial('id').primaryKey(),
     user_id: text('user_id'), // No FK - managed at app level
+    product_type: text('product_type').default('solution').notNull(), // 'solution' | 'oem_kit'
     sku: text('sku').notNull(),
     name: text('name').notNull(),
     description: text('description'),

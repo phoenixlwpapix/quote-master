@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         }
 
         const product = await createProduct({
+            product_type: body.product_type === 'oem_kit' ? 'oem_kit' : 'solution',
             sku: body.sku.trim(),
             name: body.name.trim(),
             description: body.description?.trim() || null,

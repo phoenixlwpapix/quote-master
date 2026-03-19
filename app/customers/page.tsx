@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import {
     Plus, Edit2, Trash2, Globe, MapPin, RefreshCw,
-    ChevronDown, ChevronRight, User, Star, Phone, Mail, Briefcase
+    ChevronDown, ChevronRight, User, Star, Phone, Mail, Briefcase,
+    FileText, ShoppingCart,
 } from 'lucide-react';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -261,9 +262,19 @@ function CompanyRow({
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0" onClick={(e) => e.stopPropagation()}>
-                    <span className="text-xs text-slate-400 flex items-center gap-1 mr-1">
-                        <User size={12} />
-                        {(customer.contacts?.length ?? 0)} contact{(customer.contacts?.length ?? 0) !== 1 ? 's' : ''}
+                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                        <User size={11} />
+                        {customer.contact_count ?? 0}
+                    </span>
+                    <span className="text-slate-600">·</span>
+                    <span className="text-xs text-blue-400/80 flex items-center gap-1" title="Quotes">
+                        <FileText size={11} />
+                        {customer.quote_count ?? 0}
+                    </span>
+                    <span className="text-slate-600">·</span>
+                    <span className="text-xs text-emerald-400/80 flex items-center gap-1 mr-1" title="Orders">
+                        <ShoppingCart size={11} />
+                        {customer.order_count ?? 0}
                     </span>
                     <button
                         onClick={() => onEdit(customer)}

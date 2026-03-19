@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Tag, RefreshCw } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, RefreshCw, Server, Cpu } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -11,17 +11,47 @@ import { PageSkeleton } from '@/components/Skeleton';
 import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/use-queries';
 import type { Product, Category } from '@/lib/types';
 
+type ProductType = 'solution' | 'oem_kit';
+
+const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
+    solution: 'Solution',
+    oem_kit: 'OEM Kit',
+};
+
+const PRODUCT_TYPE_DESCRIPTIONS: Record<ProductType, string> = {
+    solution: 'Rack + Analysis Module + Software',
+    oem_kit: 'Motherboard + Analysis Module + Software',
+};
+
+function ProductTypeBadge({ type }: { type: ProductType }) {
+    if (type === 'oem_kit') {
+        return (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400">
+                <Cpu size={11} />
+                OEM Kit
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-brand-500/15 text-brand-400">
+            <Server size={11} />
+            Solution
+        </span>
+    );
+}
+
 function ProductsContent() {
     const searchParams = useSearchParams();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-    const [filterCategory, setFilterCategory] = useState<string>('');
+    const [filterType, setFilterType] = useState<string>('');
     const [newCategory, setNewCategory] = useState('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const [formData, setFormData] = useState({
+        product_type: 'solution' as ProductType,
         sku: '',
         name: '',
         description: '',
@@ -29,7 +59,6 @@ function ProductsContent() {
         category_id: '',
     });
 
-    // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
     const { data: products = [], isLoading: productsLoading, isFetching: productsFetching, refetch: refetchProducts } = useProducts();
     const { data: categories = [], isLoading: categoriesLoading, refetch: refetchCategories } = useCategories();
 
@@ -39,10 +68,12 @@ function ProductsContent() {
 
     const isLoading = productsLoading || categoriesLoading;
 
-    // 根据分类过滤数据（客户端过滤）
-    const filteredProducts = filterCategory
-        ? products.filter((p) => p.category_id === parseInt(filterCategory))
+    const filteredProducts = filterType
+        ? products.filter((p) => p.product_type === filterType)
         : products;
+
+    const solutionCount = products.filter((p) => p.product_type === 'solution').length;
+    const oemKitCount = products.filter((p) => p.product_type === 'oem_kit').length;
 
     useEffect(() => {
         if (searchParams.get('new') === 'true') {
@@ -77,6 +108,7 @@ function ProductsContent() {
     const handleEdit = (product: Product) => {
         setEditingProduct(product);
         setFormData({
+            product_type: (product.product_type as ProductType) ?? 'solution',
             sku: product.sku,
             name: product.name,
             description: product.description || '',
@@ -93,7 +125,6 @@ function ProductsContent() {
 
     const handleDelete = async () => {
         if (!deletingId) return;
-
         try {
             await deleteProductMutation.mutateAsync(deletingId);
         } catch (error) {
@@ -107,7 +138,6 @@ function ProductsContent() {
     const handleAddCategory = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!newCategory.trim()) return;
-
         try {
             await fetch('/api/categories', {
                 method: 'POST',
@@ -123,6 +153,7 @@ function ProductsContent() {
 
     const resetForm = () => {
         setFormData({
+            product_type: 'solution',
             sku: '',
             name: '',
             description: '',
@@ -137,31 +168,40 @@ function ProductsContent() {
         setIsModalOpen(true);
     };
 
-    const formatCurrency = (value: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(value);
-    };
+    const formatCurrency = (value: number) =>
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
 
     const columns = [
-        { key: 'sku', label: 'SKU', sortable: true },
-        { key: 'name', label: 'Name', sortable: true },
         {
-            key: 'category_name',
-            label: 'Category',
+            key: 'product_type',
+            label: 'Type',
             sortable: true,
             render: (product: Product) => (
-                <span className="px-2 py-1 rounded-full text-xs bg-slate-700 text-slate-300">
-                    {product.category_name || 'Uncategorized'}
-                </span>
+                <ProductTypeBadge type={(product.product_type as ProductType) ?? 'solution'} />
             ),
+        },
+        { key: 'sku', label: 'Model No.', sortable: true },
+        { key: 'name', label: 'Product Name', sortable: true },
+        {
+            key: 'category_name',
+            label: 'Series',
+            sortable: true,
+            render: (product: Product) =>
+                product.category_name ? (
+                    <span className="px-2 py-1 rounded-full text-xs bg-slate-700 text-slate-300">
+                        {product.category_name}
+                    </span>
+                ) : (
+                    <span className="text-slate-600">—</span>
+                ),
         },
         {
             key: 'unit_price',
-            label: 'Unit Price',
+            label: 'List Price',
             sortable: true,
-            render: (product: Product) => formatCurrency(product.unit_price),
+            render: (product: Product) => (
+                <span className="font-mono text-slate-200">{formatCurrency(product.unit_price)}</span>
+            ),
         },
         {
             key: 'actions',
@@ -187,10 +227,7 @@ function ProductsContent() {
 
     const isSaving = createProductMutation.isPending || updateProductMutation.isPending;
 
-    // 显示骨架屏直到数据加载完成
-    if (isLoading) {
-        return <PageSkeleton />;
-    }
+    if (isLoading) return <PageSkeleton />;
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -198,23 +235,20 @@ function ProductsContent() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white">Products</h1>
-                    <p className="text-slate-400 mt-1">Manage your product catalog</p>
+                    <p className="text-slate-400 mt-1">Manage solutions & OEM kits</p>
                 </div>
                 <div className="flex gap-3">
                     <button
                         onClick={() => refetchProducts()}
                         disabled={productsFetching}
                         className="btn btn-ghost"
-                        title="Refresh data"
+                        title="Refresh"
                     >
                         <RefreshCw size={18} className={productsFetching ? 'animate-spin' : ''} />
                     </button>
-                    <button
-                        onClick={() => setIsCategoryModalOpen(true)}
-                        className="btn btn-secondary"
-                    >
+                    <button onClick={() => setIsCategoryModalOpen(true)} className="btn btn-secondary">
                         <Tag size={18} />
-                        Categories
+                        Series
                     </button>
                     <button onClick={openNewModal} className="btn btn-primary">
                         <Plus size={18} />
@@ -223,33 +257,41 @@ function ProductsContent() {
                 </div>
             </div>
 
-            {/* Category Filter Pills */}
+            {/* Type Filter */}
             <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-slate-400 mr-1">Filter by:</span>
                 <button
-                    onClick={() => setFilterCategory('')}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterCategory === ''
+                    onClick={() => setFilterType('')}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterType === ''
                         ? 'bg-brand-500/20 text-brand-400'
                         : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
                         }`}
                 >
-                    All Products
+                    All
+                    <span className="ml-1.5 text-xs opacity-70">{products.length}</span>
                 </button>
-                {categories.map((cat) => (
-                    <button
-                        key={cat.id}
-                        onClick={() => setFilterCategory(filterCategory === String(cat.id) ? '' : String(cat.id))}
-                        className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterCategory === String(cat.id)
-                            ? 'bg-brand-500/20 text-brand-400'
-                            : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
-                            }`}
-                    >
-                        {cat.name}
-                    </button>
-                ))}
-                {productsFetching && (
-                    <span className="text-slate-400 text-sm ml-2">Updating...</span>
-                )}
+                <button
+                    onClick={() => setFilterType(filterType === 'solution' ? '' : 'solution')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterType === 'solution'
+                        ? 'bg-brand-500/20 text-brand-400'
+                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                >
+                    <Server size={13} />
+                    Solutions
+                    <span className="text-xs opacity-70">{solutionCount}</span>
+                </button>
+                <button
+                    onClick={() => setFilterType(filterType === 'oem_kit' ? '' : 'oem_kit')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterType === 'oem_kit'
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                >
+                    <Cpu size={13} />
+                    OEM Kits
+                    <span className="text-xs opacity-70">{oemKitCount}</span>
+                </button>
+                {productsFetching && <span className="text-slate-400 text-sm ml-2">Updating...</span>}
             </div>
 
             {/* Products Table */}
@@ -257,8 +299,8 @@ function ProductsContent() {
                 data={filteredProducts}
                 columns={columns}
                 searchable
-                searchPlaceholder="Search products..."
-                emptyMessage="No products found. Add your first product to get started."
+                searchPlaceholder="Search by model no. or name..."
+                emptyMessage="No products found. Add your first solution or OEM kit to get started."
             />
 
             {/* Product Modal */}
@@ -269,10 +311,40 @@ function ProductsContent() {
                 size="md"
             >
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Product Type */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                            Product Type *
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            {(['solution', 'oem_kit'] as ProductType[]).map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setFormData({ ...formData, product_type: type })}
+                                    className={`flex flex-col items-start gap-0.5 p-3 rounded-lg border text-left transition-all ${formData.product_type === type
+                                        ? type === 'solution'
+                                            ? 'border-brand-500 bg-brand-500/10'
+                                            : 'border-amber-500 bg-amber-500/10'
+                                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                                        }`}
+                                >
+                                    <span className={`text-sm font-medium ${formData.product_type === type
+                                        ? type === 'solution' ? 'text-brand-400' : 'text-amber-400'
+                                        : 'text-slate-300'
+                                        }`}>
+                                        {PRODUCT_TYPE_LABELS[type]}
+                                    </span>
+                                    <span className="text-xs text-slate-500">{PRODUCT_TYPE_DESCRIPTIONS[type]}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-1">
-                                SKU *
+                                Model No. *
                             </label>
                             <input
                                 type="text"
@@ -280,19 +352,19 @@ function ProductsContent() {
                                 onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                                 required
                                 className="w-full"
-                                placeholder="e.g., HW-001"
+                                placeholder="e.g., AS-2000-PRO"
                             />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-300 mb-1">
-                                Category
+                                Series
                             </label>
                             <select
                                 value={formData.category_id}
                                 onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                                 className="w-full"
                             >
-                                <option value="">Select category</option>
+                                <option value="">— None —</option>
                                 {categories.map((cat) => (
                                     <option key={cat.id} value={cat.id}>{cat.name}</option>
                                 ))}
@@ -302,7 +374,7 @@ function ProductsContent() {
 
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">
-                            Name *
+                            Product Name *
                         </label>
                         <input
                             type="text"
@@ -310,26 +382,29 @@ function ProductsContent() {
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                             required
                             className="w-full"
-                            placeholder="Product name"
+                            placeholder="e.g., Advanced Analytics System 2000 Pro"
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">
-                            Description
+                            Components / Specs
                         </label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             rows={3}
                             className="w-full"
-                            placeholder="Optional description"
+                            placeholder={formData.product_type === 'solution'
+                                ? 'e.g., 4U Rack × 1, Model X Analysis Module × 2, Analytics Suite v3 License × 1'
+                                : 'e.g., ATX Motherboard × 1, Model X Analysis Module × 2, Analytics Suite OEM License × 1'
+                            }
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">
-                            Unit Price *
+                            List Price (USD) *
                         </label>
                         <input
                             type="number"
@@ -344,11 +419,7 @@ function ProductsContent() {
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4">
-                        <button
-                            type="button"
-                            onClick={() => setIsModalOpen(false)}
-                            className="btn btn-secondary"
-                        >
+                        <button type="button" onClick={() => setIsModalOpen(false)} className="btn btn-secondary">
                             Cancel
                         </button>
                         <button type="submit" className="btn btn-primary" disabled={isSaving}>
@@ -358,11 +429,11 @@ function ProductsContent() {
                 </form>
             </Modal>
 
-            {/* Categories Modal */}
+            {/* Series Modal */}
             <Modal
                 isOpen={isCategoryModalOpen}
                 onClose={() => setIsCategoryModalOpen(false)}
-                title="Manage Categories"
+                title="Manage Product Series"
                 size="sm"
             >
                 <div className="space-y-4">
@@ -371,23 +442,20 @@ function ProductsContent() {
                             type="text"
                             value={newCategory}
                             onChange={(e) => setNewCategory(e.target.value)}
-                            placeholder="New category name"
+                            placeholder="New series name (e.g., Pro Series)"
                             className="flex-1"
                         />
-                        <button type="submit" className="btn btn-primary">
-                            Add
-                        </button>
+                        <button type="submit" className="btn btn-primary">Add</button>
                     </form>
-
                     <div className="space-y-2">
                         {categories.map((cat) => (
-                            <div
-                                key={cat.id}
-                                className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50"
-                            >
+                            <div key={cat.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50">
                                 <span className="text-white">{cat.name}</span>
                             </div>
                         ))}
+                        {categories.length === 0 && (
+                            <p className="text-slate-500 text-sm text-center py-4">No series yet</p>
+                        )}
                     </div>
                 </div>
             </Modal>
