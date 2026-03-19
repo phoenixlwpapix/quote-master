@@ -97,8 +97,7 @@ export default function NewQuotePage() {
 
         const results = customers.filter(c =>
             c.name.toLowerCase().includes(term.toLowerCase()) ||
-            (c.company && c.company.toLowerCase().includes(term.toLowerCase())) ||
-            (c.email && c.email.toLowerCase().includes(term.toLowerCase()))
+            (c.industry && c.industry.toLowerCase().includes(term.toLowerCase()))
         );
         setCustomerSearchResults(results);
     }, [customers]);
@@ -107,8 +106,6 @@ export default function NewQuotePage() {
         setFormData({
             ...formData,
             customer_name: customer.name,
-            customer_email: customer.email || '',
-            customer_phone: customer.phone || '',
             customer_address: customer.address || '',
         });
         setCustomerSearchTerm('');
@@ -274,9 +271,8 @@ export default function NewQuotePage() {
                                                 >
                                                     <p className="text-white font-medium">{customer.name}</p>
                                                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-400">
-                                                        {customer.company && <span className="text-slate-500">{customer.company}</span>}
-                                                        {customer.email && <span>{customer.email}</span>}
-                                                        {customer.phone && <span>{customer.phone}</span>}
+                                                        {customer.industry && <span>{customer.industry}</span>}
+                                                        {customer.address && <span>{customer.address}</span>}
                                                     </div>
                                                 </button>
                                             ))}
@@ -295,9 +291,8 @@ export default function NewQuotePage() {
                                                 >
                                                     <p className="text-white font-medium">{customer.name}</p>
                                                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-400">
-                                                        {customer.company && <span className="text-slate-500">{customer.company}</span>}
-                                                        {customer.email && <span>{customer.email}</span>}
-                                                        {customer.phone && <span>{customer.phone}</span>}
+                                                        {customer.industry && <span>{customer.industry}</span>}
+                                                        {customer.address && <span>{customer.address}</span>}
                                                     </div>
                                                 </button>
                                             ))}

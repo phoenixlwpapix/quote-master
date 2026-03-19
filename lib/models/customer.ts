@@ -9,6 +9,8 @@ import { requireUserId } from '../auth/get-user';
 function mapCustomer(c: typeof customers.$inferSelect): Customer {
     return {
         ...c,
+        website: c.website ?? null,
+        industry: c.industry ?? null,
         created_at: c.created_at?.toISOString() ?? new Date().toISOString(),
         updated_at: c.updated_at?.toISOString() ?? new Date().toISOString(),
     };
@@ -40,10 +42,9 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
     const result = await db.insert(customers).values({
         user_id: userId,
         name: input.name,
-        email: input.email,
-        phone: input.phone,
         address: input.address,
-        company: input.company,
+        website: input.website,
+        industry: input.industry,
         notes: input.notes,
     }).returning();
 
@@ -53,7 +54,6 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
 export async function updateCustomer(id: number, input: UpdateCustomerInput): Promise<Customer | undefined> {
     const userId = await requireUserId();
 
-    // First verify ownership
     const existing = await getCustomerById(id);
     if (!existing) return undefined;
 
@@ -87,9 +87,8 @@ export async function searchCustomers(query: string): Promise<Customer[]> {
             eq(customers.user_id, userId),
             or(
                 like(customers.name, searchTerm),
-                like(customers.email, searchTerm),
-                like(customers.company, searchTerm),
-                like(customers.phone, searchTerm)
+                like(customers.industry, searchTerm),
+                like(customers.address, searchTerm),
             )
         ))
         .orderBy(asc(customers.name));

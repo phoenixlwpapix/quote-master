@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { productsAPI, quotesAPI, ordersAPI, customersAPI, categoriesAPI } from '@/lib/api';
-import type { Product, Quote, Order, Customer, Category } from '@/lib/types';
+import { productsAPI, quotesAPI, ordersAPI, customersAPI, categoriesAPI, contactsAPI } from '@/lib/api';
+import type { Product, Quote, Order, Customer, Category, Contact } from '@/lib/types';
 
 // Query Keys
 export const queryKeys = {
@@ -14,6 +14,7 @@ export const queryKeys = {
     order: (id: number) => ['orders', id] as const,
     customers: ['customers'] as const,
     customer: (id: number) => ['customers', id] as const,
+    contacts: (customerId: number) => ['contacts', customerId] as const,
     categories: ['categories'] as const,
 };
 
@@ -205,6 +206,48 @@ export function useDeleteCustomer() {
     return useMutation({
         mutationFn: customersAPI.delete,
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.customers });
+        },
+    });
+}
+
+// Contacts Hooks
+export function useContacts(customerId: number) {
+    return useQuery({
+        queryKey: queryKeys.contacts(customerId),
+        queryFn: () => contactsAPI.getByCustomer(customerId) as Promise<Contact[]>,
+        enabled: customerId > 0,
+    });
+}
+
+export function useCreateContact(customerId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (data: unknown) => contactsAPI.create(customerId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.contacts(customerId) });
+            queryClient.invalidateQueries({ queryKey: queryKeys.customers });
+        },
+    });
+}
+
+export function useUpdateContact(customerId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ contactId, data }: { contactId: number; data: unknown }) =>
+            contactsAPI.update(customerId, contactId, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.contacts(customerId) });
+        },
+    });
+}
+
+export function useDeleteContact(customerId: number) {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: (contactId: number) => contactsAPI.delete(customerId, contactId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.contacts(customerId) });
             queryClient.invalidateQueries({ queryKey: queryKeys.customers });
         },
     });

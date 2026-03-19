@@ -8,18 +8,33 @@ export interface Category {
 
 export interface Customer {
     id: number;
+    name: string; // company name
+    address: string | null;
+    website: string | null;
+    industry: string | null;
+    notes: string | null;
+    created_at: string;
+    updated_at: string;
+    contacts?: Contact[];
+}
+
+export interface Contact {
+    id: number;
+    customer_id: number;
     name: string;
+    title: string | null;
     email: string | null;
     phone: string | null;
-    address: string | null;
-    company: string | null;
+    is_primary: boolean;
     notes: string | null;
     created_at: string;
     updated_at: string;
 }
 
-export type CreateCustomerInput = Omit<Customer, 'id' | 'created_at' | 'updated_at'>;
+export type CreateCustomerInput = Omit<Customer, 'id' | 'created_at' | 'updated_at' | 'contacts'>;
 export type UpdateCustomerInput = Partial<CreateCustomerInput>;
+export type CreateContactInput = Omit<Contact, 'id' | 'customer_id' | 'created_at' | 'updated_at'>;
+export type UpdateContactInput = Partial<CreateContactInput>;
 
 export interface Product {
     id: number;

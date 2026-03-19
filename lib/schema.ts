@@ -60,11 +60,24 @@ export const categories = pgTable('categories', {
 export const customers = pgTable('customers', {
     id: serial('id').primaryKey(),
     user_id: text('user_id'), // No FK - managed at app level
+    name: text('name').notNull(), // company name
+    address: text('address'),
+    website: text('website'),
+    industry: text('industry'),
+    notes: text('notes'),
+    created_at: timestamp('created_at').defaultNow(),
+    updated_at: timestamp('updated_at').defaultNow(),
+});
+
+export const contacts = pgTable('contacts', {
+    id: serial('id').primaryKey(),
+    customer_id: integer('customer_id').notNull().references(() => customers.id, { onDelete: 'cascade' }),
+    user_id: text('user_id'),
     name: text('name').notNull(),
+    title: text('title'),
     email: text('email'),
     phone: text('phone'),
-    address: text('address'),
-    company: text('company'),
+    is_primary: boolean('is_primary').default(false).notNull(),
     notes: text('notes'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
@@ -157,6 +170,17 @@ export const companySettings = pgTable('company_settings', {
 });
 
 // Relations (app tables only)
+export const customersRelations = relations(customers, ({ many }) => ({
+    contacts: many(contacts),
+}));
+
+export const contactsRelations = relations(contacts, ({ one }) => ({
+    customer: one(customers, {
+        fields: [contacts.customer_id],
+        references: [customers.id],
+    }),
+}));
+
 export const productsRelations = relations(products, ({ one }) => ({
     category: one(categories, {
         fields: [products.category_id],

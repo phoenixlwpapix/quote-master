@@ -80,6 +80,14 @@ export const customersAPI = {
     delete: (id: number) => deleteAPI(`/api/customers/${id}`),
 };
 
+// Contacts
+export const contactsAPI = {
+    getByCustomer: (customerId: number) => fetchAPI(`/api/customers/${customerId}/contacts`),
+    create: (customerId: number, data: unknown) => postAPI(`/api/customers/${customerId}/contacts`, data),
+    update: (customerId: number, contactId: number, data: unknown) => putAPI(`/api/customers/${customerId}/contacts/${contactId}`, data),
+    delete: (customerId: number, contactId: number) => deleteAPI(`/api/customers/${customerId}/contacts/${contactId}`),
+};
+
 // Categories
 export const categoriesAPI = {
     getAll: () => fetchAPI('/api/categories'),

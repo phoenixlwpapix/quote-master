@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerById, updateCustomer, deleteCustomer } from '@/lib/models/customer';
+import { getContactsByCustomerId } from '@/lib/models/contact';
 
 export async function GET(
     request: NextRequest,
@@ -13,7 +14,8 @@ export async function GET(
             return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
         }
 
-        return NextResponse.json(customer);
+        const contacts = await getContactsByCustomerId(parseInt(id, 10));
+        return NextResponse.json({ ...customer, contacts });
     } catch (error) {
         console.error('Error fetching customer:', error);
         return NextResponse.json({ error: 'Failed to fetch customer' }, { status: 500 });
@@ -30,11 +32,10 @@ export async function PUT(
 
         const customer = await updateCustomer(parseInt(id, 10), {
             name: body.name?.trim(),
-            email: body.email?.trim(),
-            phone: body.phone?.trim(),
-            address: body.address?.trim(),
-            company: body.company?.trim(),
-            notes: body.notes?.trim(),
+            address: body.address?.trim() || null,
+            website: body.website?.trim() || null,
+            industry: body.industry?.trim() || null,
+            notes: body.notes?.trim() || null,
         });
 
         if (!customer) {

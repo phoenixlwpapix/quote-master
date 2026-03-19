@@ -19,15 +19,14 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
 
         if (!body.name || typeof body.name !== 'string') {
-            return NextResponse.json({ error: 'Name is required' }, { status: 400 });
+            return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
         }
 
         const customer = await createCustomer({
             name: body.name.trim(),
-            email: body.email?.trim() || null,
-            phone: body.phone?.trim() || null,
             address: body.address?.trim() || null,
-            company: body.company?.trim() || null,
+            website: body.website?.trim() || null,
+            industry: body.industry?.trim() || null,
             notes: body.notes?.trim() || null,
         });
 
