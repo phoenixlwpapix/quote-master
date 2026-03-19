@@ -9,6 +9,7 @@ import { requireUserId } from '../auth/get-user';
 function mapProduct(row: typeof products.$inferSelect & { category_name: string | null }): Product {
   return {
     ...row,
+    product_type: row.product_type as Product['product_type'],
     created_at: row.created_at?.toISOString() ?? new Date().toISOString(),
     updated_at: row.updated_at?.toISOString() ?? new Date().toISOString(),
     category_name: row.category_name ?? undefined,
