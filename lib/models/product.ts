@@ -86,15 +86,16 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
 }
 
 export async function updateProduct(id: number, input: UpdateProductInput): Promise<Product | undefined> {
-  const existing = await getProductById(id);
-  if (!existing) return undefined;
+  const userId = await requireUserId();
 
-  await db.update(products).set({
+  const updated = await db.update(products).set({
     ...input,
     updated_at: new Date(),
   })
-    .where(eq(products.id, id));
+    .where(and(eq(products.id, id), eq(products.user_id, userId)))
+    .returning({ id: products.id });
 
+  if (updated.length === 0) return undefined;
   return getProductById(id);
 }
 

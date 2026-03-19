@@ -66,16 +66,15 @@ export async function getAllOrders(status?: string): Promise<Order[]> {
 export async function getOrderById(id: number): Promise<Order | undefined> {
     const userId = await requireUserId();
 
-    const result = await db.select()
-        .from(orders)
-        .where(and(eq(orders.id, id), eq(orders.user_id, userId)));
+    const [result, items] = await Promise.all([
+        db.select().from(orders).where(and(eq(orders.id, id), eq(orders.user_id, userId))),
+        db.select().from(orderItems).where(eq(orderItems.order_id, id)),
+    ]);
 
     if (result.length === 0) return undefined;
 
     const order = mapOrder(result[0]);
-    const items = await db.select().from(orderItems).where(eq(orderItems.order_id, id));
     order.items = items.map(mapOrderItem);
-
     return order;
 }
 
@@ -91,7 +90,6 @@ export async function getOrderByNumber(orderNumber: string): Promise<Order | und
     const order = mapOrder(result[0]);
     const items = await db.select().from(orderItems).where(eq(orderItems.order_id, order.id));
     order.items = items.map(mapOrderItem);
-
     return order;
 }
 
@@ -147,16 +145,18 @@ export async function convertQuoteToOrder(quoteId: number): Promise<Order | unde
 }
 
 export async function updateOrder(id: number, input: UpdateOrderInput): Promise<Order | undefined> {
-    const existing = await getOrderById(id);
-    if (!existing) return undefined;
+    const userId = await requireUserId();
 
-    await db.update(orders).set({
-        status: input.status ?? existing.status,
-        notes: input.notes ?? existing.notes,
-        updated_at: new Date(),
-    }).where(eq(orders.id, id));
+    const setValues: Record<string, unknown> = { updated_at: new Date() };
+    if (input.status !== undefined) setValues.status = input.status;
+    if (input.notes !== undefined) setValues.notes = input.notes;
 
-    return await getOrderById(id);
+    const updated = await db.update(orders).set(setValues)
+        .where(and(eq(orders.id, id), eq(orders.user_id, userId)))
+        .returning({ id: orders.id });
+
+    if (updated.length === 0) return undefined;
+    return getOrderById(id);
 }
 
 export async function deleteOrder(id: number): Promise<boolean> {
@@ -171,27 +171,22 @@ export async function deleteOrder(id: number): Promise<boolean> {
 export async function getOrderStats(): Promise<{ total: number; pending: number; processing: number; completed: number; cancelled: number }> {
     const userId = await requireUserId();
 
-    const totalRes = await db.select({ count: sql<number>`count(*)` })
+    const rows = await db.select({
+        status: orders.status,
+        count: sql<number>`cast(count(*) as int)`,
+    })
         .from(orders)
-        .where(eq(orders.user_id, userId));
-    const pendingRes = await db.select({ count: sql<number>`count(*)` })
-        .from(orders)
-        .where(and(eq(orders.user_id, userId), eq(orders.status, 'pending')));
-    const processingRes = await db.select({ count: sql<number>`count(*)` })
-        .from(orders)
-        .where(and(eq(orders.user_id, userId), eq(orders.status, 'processing')));
-    const completedRes = await db.select({ count: sql<number>`count(*)` })
-        .from(orders)
-        .where(and(eq(orders.user_id, userId), eq(orders.status, 'completed')));
-    const cancelledRes = await db.select({ count: sql<number>`count(*)` })
-        .from(orders)
-        .where(and(eq(orders.user_id, userId), eq(orders.status, 'cancelled')));
+        .where(eq(orders.user_id, userId))
+        .groupBy(orders.status);
 
-    return {
-        total: Number(totalRes[0]?.count || 0),
-        pending: Number(pendingRes[0]?.count || 0),
-        processing: Number(processingRes[0]?.count || 0),
-        completed: Number(completedRes[0]?.count || 0),
-        cancelled: Number(cancelledRes[0]?.count || 0),
-    };
+    const stats = { total: 0, pending: 0, processing: 0, completed: 0, cancelled: 0 };
+    for (const row of rows) {
+        const n = Number(row.count);
+        stats.total += n;
+        if (row.status === 'pending') stats.pending = n;
+        else if (row.status === 'processing') stats.processing = n;
+        else if (row.status === 'completed') stats.completed = n;
+        else if (row.status === 'cancelled') stats.cancelled = n;
+    }
+    return stats;
 }

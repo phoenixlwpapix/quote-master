@@ -69,17 +69,15 @@ export async function getAllQuotes(status?: string): Promise<Quote[]> {
 export async function getQuoteById(id: number): Promise<Quote | undefined> {
     const userId = await requireUserId();
 
-    const result = await db.select()
-        .from(quotes)
-        .where(and(eq(quotes.id, id), eq(quotes.user_id, userId)));
+    const [result, items] = await Promise.all([
+        db.select().from(quotes).where(and(eq(quotes.id, id), eq(quotes.user_id, userId))),
+        db.select().from(quoteItems).where(eq(quoteItems.quote_id, id)),
+    ]);
 
     if (result.length === 0) return undefined;
 
     const quote = mapQuote(result[0]);
-
-    const items = await db.select().from(quoteItems).where(eq(quoteItems.quote_id, id));
     quote.items = items.map(mapQuoteItem);
-
     return quote;
 }
 
@@ -93,10 +91,8 @@ export async function getQuoteByNumber(quoteNumber: string): Promise<Quote | und
     if (result.length === 0) return undefined;
 
     const quote = mapQuote(result[0]);
-
     const items = await db.select().from(quoteItems).where(eq(quoteItems.quote_id, quote.id));
     quote.items = items.map(mapQuoteItem);
-
     return quote;
 }
 
@@ -249,23 +245,21 @@ export async function deleteQuote(id: number): Promise<boolean> {
 export async function getQuoteStats(): Promise<{ total: number; draft: number; sent: number; approved: number }> {
     const userId = await requireUserId();
 
-    const totalRes = await db.select({ count: sql<number>`count(*)` })
+    const rows = await db.select({
+        status: quotes.status,
+        count: sql<number>`cast(count(*) as int)`,
+    })
         .from(quotes)
-        .where(eq(quotes.user_id, userId));
-    const draftRes = await db.select({ count: sql<number>`count(*)` })
-        .from(quotes)
-        .where(and(eq(quotes.user_id, userId), eq(quotes.status, 'draft')));
-    const sentRes = await db.select({ count: sql<number>`count(*)` })
-        .from(quotes)
-        .where(and(eq(quotes.user_id, userId), eq(quotes.status, 'sent')));
-    const approvedRes = await db.select({ count: sql<number>`count(*)` })
-        .from(quotes)
-        .where(and(eq(quotes.user_id, userId), eq(quotes.status, 'approved')));
+        .where(eq(quotes.user_id, userId))
+        .groupBy(quotes.status);
 
-    return {
-        total: Number(totalRes[0]?.count || 0),
-        draft: Number(draftRes[0]?.count || 0),
-        sent: Number(sentRes[0]?.count || 0),
-        approved: Number(approvedRes[0]?.count || 0)
-    };
+    const stats = { total: 0, draft: 0, sent: 0, approved: 0 };
+    for (const row of rows) {
+        const n = Number(row.count);
+        stats.total += n;
+        if (row.status === 'draft') stats.draft = n;
+        else if (row.status === 'sent') stats.sent = n;
+        else if (row.status === 'approved') stats.approved = n;
+    }
+    return stats;
 }

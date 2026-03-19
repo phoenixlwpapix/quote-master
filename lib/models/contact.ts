@@ -2,7 +2,7 @@ import 'server-only';
 
 import { db } from '../db';
 import { contacts } from '../schema';
-import { eq, asc, and } from 'drizzle-orm';
+import { eq, asc, desc, and } from 'drizzle-orm';
 import type { Contact, CreateContactInput, UpdateContactInput } from '../types';
 import { requireUserId } from '../auth/get-user';
 
@@ -20,11 +20,9 @@ export async function getContactsByCustomerId(customerId: number): Promise<Conta
     const result = await db.select()
         .from(contacts)
         .where(and(eq(contacts.customer_id, customerId), eq(contacts.user_id, userId)))
-        .orderBy(asc(contacts.is_primary), asc(contacts.name));
-    // is_primary desc: false < true in asc, so primary comes last — use desc trick
-    return result
-        .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))
-        .map(mapContact);
+        .orderBy(desc(contacts.is_primary), asc(contacts.name));
+
+    return result.map(mapContact);
 }
 
 export async function createContact(customerId: number, input: CreateContactInput): Promise<Contact> {
