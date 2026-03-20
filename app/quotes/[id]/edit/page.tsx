@@ -46,6 +46,8 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
         valid_until: '',
     });
 
+    const [deliveryWeeks, setDeliveryWeeks] = useState<string>('');
+
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
     // Drag and drop for reordering line items
@@ -93,6 +95,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                     notes: data.notes || '',
                     valid_until: data.valid_until ? new Date(data.valid_until).toISOString().split('T')[0] : '',
                 });
+                setDeliveryWeeks(data.delivery_weeks != null ? String(data.delivery_weeks) : '');
 
                 if (data.items) {
                     setLineItems(data.items.map((item: any) => ({
@@ -256,6 +259,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
+                    delivery_weeks: deliveryWeeks ? parseInt(deliveryWeeks, 10) : null,
                     items: lineItems.map(({ product_id, product_name, product_sku, unit_price, quantity }) => ({
                         product_id,
                         product_name,
@@ -447,6 +451,20 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                                 value={formData.valid_until}
                                 onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
                                 className="w-full"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                                Delivery Time (weeks)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={deliveryWeeks}
+                                onChange={(e) => setDeliveryWeeks(e.target.value)}
+                                className="w-full"
+                                placeholder="e.g. 4"
                             />
                         </div>
                         <div className="md:col-span-2">

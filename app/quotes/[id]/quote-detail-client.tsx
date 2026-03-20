@@ -210,6 +210,12 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                             <p className="font-medium">{formatDate(quote.valid_until)}</p>
                         </div>
                     )}
+                    {quote.delivery_weeks != null && (
+                        <div>
+                            <p className="text-sm text-slate-400">Delivery Time</p>
+                            <p className="font-medium">{quote.delivery_weeks} week{quote.delivery_weeks !== 1 ? 's' : ''}</p>
+                        </div>
+                    )}
                     {quote.customer_address && (
                         <div className="md:col-span-2">
                             <p className="text-sm text-slate-400">Address</p>

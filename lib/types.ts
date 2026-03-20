@@ -75,6 +75,7 @@ export interface Quote {
     discount_amount: number;
     shipping_fee: number;
     incoterm: string | null;
+    delivery_weeks: number | null;
     total: number;
     issue_date: string | null;
     notes: string | null;
@@ -109,6 +110,7 @@ export interface Order {
     discount_amount: number;
     shipping_fee: number;
     incoterm: string | null;
+    delivery_weeks: number | null;
     total: number;
     issue_date: string | null;
     notes: string | null;
@@ -132,6 +134,7 @@ export interface CreateQuoteInput {
     discount_percent?: number;
     shipping_fee?: number;
     incoterm?: string;
+    delivery_weeks?: number | null;
     issue_date?: string;
     notes?: string;
     valid_until?: string;
@@ -146,6 +149,7 @@ export interface UpdateQuoteInput extends Partial<Omit<CreateQuoteInput, 'items'
 export interface UpdateOrderInput {
     status?: Order['status'];
     issue_date?: string | null;
+    delivery_weeks?: number | null;
     notes?: string;
 }
 

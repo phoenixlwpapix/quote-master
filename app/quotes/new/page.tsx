@@ -45,6 +45,8 @@ export default function NewQuotePage() {
         valid_until: '',
     });
 
+    const [deliveryWeeks, setDeliveryWeeks] = useState<string>('');
+
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
     // Drag and drop for reordering line items
@@ -200,6 +202,7 @@ export default function NewQuotePage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ...formData,
+                    delivery_weeks: deliveryWeeks ? parseInt(deliveryWeeks, 10) : null,
                     items: lineItems.map(({ product_id, product_name, product_sku, unit_price, quantity }) => ({
                         product_id,
                         product_name,
@@ -384,6 +387,20 @@ export default function NewQuotePage() {
                                 value={formData.valid_until}
                                 onChange={(e) => setFormData({ ...formData, valid_until: e.target.value })}
                                 className="w-full"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                                Delivery Time (weeks)
+                            </label>
+                            <input
+                                type="number"
+                                min="1"
+                                step="1"
+                                value={deliveryWeeks}
+                                onChange={(e) => setDeliveryWeeks(e.target.value)}
+                                className="w-full"
+                                placeholder="e.g. 4"
                             />
                         </div>
                         <div className="md:col-span-2">

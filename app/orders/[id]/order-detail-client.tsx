@@ -20,6 +20,7 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [newStatus, setNewStatus] = useState<string>(order.status);
     const [newIssueDate, setNewIssueDate] = useState<string>(order.issue_date ?? '');
+    const [newDeliveryWeeks, setNewDeliveryWeeks] = useState<string>(order.delivery_weeks != null ? String(order.delivery_weeks) : '');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
@@ -31,6 +32,7 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                 body: JSON.stringify({
                     status: newStatus,
                     issue_date: newIssueDate || null,
+                    delivery_weeks: newDeliveryWeeks ? parseInt(newDeliveryWeeks, 10) : null,
                 }),
             });
 
@@ -151,6 +153,12 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                             <p className="font-medium">{order.customer_phone}</p>
                         </div>
                     )}
+                    {order.delivery_weeks != null && (
+                        <div>
+                            <p className="text-sm text-slate-400">Delivery Time</p>
+                            <p className="font-medium">{order.delivery_weeks} week{order.delivery_weeks !== 1 ? 's' : ''}</p>
+                        </div>
+                    )}
                     {order.customer_address && (
                         <div className="md:col-span-2">
                             <p className="text-sm text-slate-400">Address</p>
@@ -263,6 +271,20 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                             value={newIssueDate}
                             onChange={(e) => setNewIssueDate(e.target.value)}
                             className="w-full"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                            Delivery Time (weeks)
+                        </label>
+                        <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={newDeliveryWeeks}
+                            onChange={(e) => setNewDeliveryWeeks(e.target.value)}
+                            className="w-full"
+                            placeholder="e.g. 4"
                         />
                     </div>
                     <div className="flex justify-end gap-3">

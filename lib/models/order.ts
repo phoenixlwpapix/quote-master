@@ -116,6 +116,7 @@ export async function convertQuoteToOrder(quoteId: number): Promise<Order | unde
             discount_amount: quote.discount_amount,
             shipping_fee: quote.shipping_fee,
             incoterm: quote.incoterm,
+            delivery_weeks: quote.delivery_weeks,
             total: quote.total,
             notes: quote.notes,
             status: 'pending',
@@ -153,6 +154,7 @@ export async function updateOrder(id: number, input: UpdateOrderInput): Promise<
     const setValues: Record<string, unknown> = { updated_at: new Date() };
     if (input.status !== undefined) setValues.status = input.status;
     if (input.issue_date !== undefined) setValues.issue_date = input.issue_date ?? null;
+    if (input.delivery_weeks !== undefined) setValues.delivery_weeks = input.delivery_weeks ?? null;
     if (input.notes !== undefined) setValues.notes = input.notes;
 
     const updated = await db.update(orders).set(setValues)
