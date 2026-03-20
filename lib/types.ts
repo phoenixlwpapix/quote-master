@@ -55,7 +55,7 @@ export interface Product {
 export interface QuoteItem {
     id?: number;
     quote_id?: number;
-    product_id: number;
+    product_id: number | null;
     product_name: string;
     product_sku: string;
     unit_price: number;
@@ -87,7 +87,7 @@ export interface Quote {
 export interface OrderItem {
     id?: number;
     order_id?: number;
-    product_id: number;
+    product_id: number | null;
     product_name: string;
     product_sku: string;
     unit_price: number;

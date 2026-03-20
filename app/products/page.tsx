@@ -343,6 +343,16 @@ function ProductsContent() {
                 searchable
                 searchPlaceholder="Search by model no. or name..."
                 emptyMessage="No products found. Add your first product to get started."
+                expandRender={(product) =>
+                    product.description ? (
+                        <div className="space-y-1">
+                            <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Components / Specs</p>
+                            <p className="text-sm text-slate-300 whitespace-pre-line leading-relaxed">{product.description}</p>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-600 italic">No specs provided.</p>
+                    )
+                }
             />
 
             {/* Product Modal */}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronUp, ChevronDown, Search } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronUp, ChevronDown, Search, ChevronRight } from 'lucide-react';
 
 interface Column<T> {
     key: keyof T | string;
@@ -17,6 +17,7 @@ interface DataTableProps<T> {
     searchable?: boolean;
     searchPlaceholder?: string;
     emptyMessage?: string;
+    expandRender?: (item: T) => React.ReactNode;
 }
 
 export default function DataTable<T extends { id: number | string }>({
@@ -26,10 +27,21 @@ export default function DataTable<T extends { id: number | string }>({
     searchable = false,
     searchPlaceholder = 'Search...',
     emptyMessage = 'No data found',
+    expandRender,
 }: DataTableProps<T>) {
     const [sortKey, setSortKey] = useState<string | null>(null);
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
     const [search, setSearch] = useState('');
+    const [expandedIds, setExpandedIds] = useState<Set<number | string>>(new Set());
+
+    const toggleExpand = (id: number | string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setExpandedIds(prev => {
+            const next = new Set(prev);
+            next.has(id) ? next.delete(id) : next.add(id);
+            return next;
+        });
+    };
 
     const handleSort = (key: string) => {
         if (sortKey === key) {
@@ -80,6 +92,7 @@ export default function DataTable<T extends { id: number | string }>({
                 <table className="w-full">
                     <thead className="bg-slate-800/80">
                         <tr>
+                            {expandRender && <th className="px-2 py-3 w-8" />}
                             {columns.map((col) => (
                                 <th
                                     key={String(col.key)}
@@ -100,27 +113,51 @@ export default function DataTable<T extends { id: number | string }>({
                     <tbody className="divide-y divide-slate-700/50">
                         {sortedData.length === 0 ? (
                             <tr>
-                                <td colSpan={columns.length} className="px-4 py-8 text-center text-slate-400">
+                                <td colSpan={columns.length + (expandRender ? 1 : 0)} className="px-4 py-8 text-center text-slate-400">
                                     {emptyMessage}
                                 </td>
                             </tr>
                         ) : (
-                            sortedData.map((item) => (
-                                <tr
-                                    key={item.id}
-                                    className={`bg-slate-800/40 hover:bg-slate-700/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''
-                                        }`}
-                                    onClick={() => onRowClick?.(item)}
-                                >
-                                    {columns.map((col) => (
-                                        <td key={String(col.key)} className="px-4 py-3 text-sm text-slate-200">
-                                            {col.render
-                                                ? col.render(item)
-                                                : String((item as Record<string, unknown>)[String(col.key)] ?? '-')}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
+                            sortedData.map((item) => {
+                                const isExpanded = expandedIds.has(item.id);
+                                return (
+                                    <React.Fragment key={item.id}>
+                                        <tr
+                                            className={`bg-slate-800/40 hover:bg-slate-700/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                                            onClick={() => onRowClick?.(item)}
+                                        >
+                                            {expandRender && (
+                                                <td className="px-2 py-3 w-8">
+                                                    <button
+                                                        onClick={(e) => toggleExpand(item.id, e)}
+                                                        className="text-slate-500 hover:text-slate-300 transition-colors"
+                                                    >
+                                                        <ChevronRight
+                                                            size={16}
+                                                            className={`transition-transform duration-150 ${isExpanded ? 'rotate-90' : ''}`}
+                                                        />
+                                                    </button>
+                                                </td>
+                                            )}
+                                            {columns.map((col) => (
+                                                <td key={String(col.key)} className="px-4 py-3 text-sm text-slate-200">
+                                                    {col.render
+                                                        ? col.render(item)
+                                                        : String((item as Record<string, unknown>)[String(col.key)] ?? '-')}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                        {expandRender && isExpanded && (
+                                            <tr className="bg-slate-800/20">
+                                                <td />
+                                                <td colSpan={columns.length} className="px-4 pb-4 pt-2">
+                                                    {expandRender(item)}
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>
