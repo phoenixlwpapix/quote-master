@@ -1,8 +1,8 @@
 import 'server-only';
 
 import { db } from '../db';
-import { quotes, quoteItems } from '../schema';
-import { eq, desc, like, sql, and } from 'drizzle-orm';
+import { quotes, quoteItems, orders } from '../schema';
+import { eq, desc, like, sql, and, isNotNull } from 'drizzle-orm';
 import type { Quote, QuoteItem, CreateQuoteInput, UpdateQuoteInput } from '../types';
 import { requireUserId } from '../auth/get-user';
 
@@ -59,26 +59,37 @@ export async function getAllQuotes(status?: string): Promise<Quote[]> {
         conditions.push(eq(quotes.status, status));
     }
 
-    const result = await db.select()
-        .from(quotes)
-        .where(and(...conditions))
-        .orderBy(desc(quotes.created_at));
+    const [quoteRows, orderRows] = await Promise.all([
+        db.select().from(quotes).where(and(...conditions)).orderBy(desc(quotes.created_at)),
+        db.select({ id: orders.id, quote_id: orders.quote_id })
+            .from(orders)
+            .where(and(eq(orders.user_id, userId), isNotNull(orders.quote_id))),
+    ]);
 
-    return result.map(mapQuote);
+    const orderByQuoteId = new Map(orderRows.map(o => [o.quote_id!, o.id]));
+
+    return quoteRows.map(row => ({
+        ...mapQuote(row),
+        order_id: orderByQuoteId.get(row.id) ?? null,
+    }));
 }
 
 export async function getQuoteById(id: number): Promise<Quote | undefined> {
     const userId = await requireUserId();
 
-    const [result, items] = await Promise.all([
+    const [result, items, orderResult] = await Promise.all([
         db.select().from(quotes).where(and(eq(quotes.id, id), eq(quotes.user_id, userId))),
         db.select().from(quoteItems).where(eq(quoteItems.quote_id, id)),
+        db.select({ id: orders.id }).from(orders)
+            .where(and(eq(orders.quote_id, id), eq(orders.user_id, userId)))
+            .limit(1),
     ]);
 
     if (result.length === 0) return undefined;
 
     const quote = mapQuote(result[0]);
     quote.items = items.map(mapQuoteItem);
+    quote.order_id = orderResult[0]?.id ?? null;
     return quote;
 }
 

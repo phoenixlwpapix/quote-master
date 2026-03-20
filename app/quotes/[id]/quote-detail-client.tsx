@@ -158,7 +158,7 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
 
                     {/* Right group - Primary & Danger actions */}
                     <div className="flex items-center gap-2">
-                        {quote.status === 'approved' && (
+                        {quote.status === 'approved' && !quote.order_id && (
                             <button
                                 onClick={() => setConvertModalOpen(true)}
                                 className="btn btn-primary"
@@ -167,6 +167,12 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                                 <ShoppingCart size={18} />
                                 {converting ? 'Converting...' : 'Convert to Order'}
                             </button>
+                        )}
+                        {quote.order_id && (
+                            <Link href={`/orders/${quote.order_id}`} className="btn btn-primary">
+                                <ShoppingCart size={18} />
+                                View Order
+                            </Link>
                         )}
                         <button onClick={() => setDeleteModalOpen(true)} className="btn btn-danger">
                             <Trash2 size={18} />

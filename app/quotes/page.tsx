@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Plus, Eye, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, Eye, Trash2, RefreshCw, ShoppingCart } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import StatusBadge from '@/components/StatusBadge';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -75,7 +75,17 @@ export default function QuotesPage() {
             key: 'status',
             label: 'Status',
             sortable: true,
-            render: (quote: Quote) => <StatusBadge status={quote.status} />,
+            render: (quote: Quote) => (
+                <div className="flex items-center gap-2">
+                    <StatusBadge status={quote.status} />
+                    {quote.order_id && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-purple-900/40 text-purple-300 border border-purple-700/50">
+                            <ShoppingCart size={10} />
+                            Converted
+                        </span>
+                    )}
+                </div>
+            ),
         },
         {
             key: 'valid_until',
@@ -101,6 +111,15 @@ export default function QuotesPage() {
                     >
                         <Eye size={16} />
                     </Link>
+                    {quote.order_id && (
+                        <Link
+                            href={`/orders/${quote.order_id}`}
+                            className="p-1.5 rounded-lg text-purple-400 hover:text-purple-300 hover:bg-slate-700 transition-colors"
+                            title="View Order"
+                        >
+                            <ShoppingCart size={16} />
+                        </Link>
+                    )}
                     <button
                         onClick={(e) => openDeleteModal(quote.id, e)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-700 transition-colors"

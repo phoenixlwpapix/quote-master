@@ -84,6 +84,7 @@ export interface Quote {
     created_at: string;
     updated_at: string;
     items?: QuoteItem[];
+    order_id?: number | null;
 }
 
 export interface OrderItem {
