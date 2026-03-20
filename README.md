@@ -7,8 +7,8 @@ A modern, multi-tenant quote and order management SaaS built with Next.js 16. Qu
 - 🔐 **User Authentication** - Secure sign-up/sign-in powered by Neon Auth
 - 📊 **Dashboard** - Overview of quotes, orders, and key metrics at a glance
 - 👥 **Customer Management** - Add, edit, and manage customer information
-- 📦 **Product Catalog** - Maintain a catalog of products with pricing and categories
-- 📝 **Quote Generation** - Create professional quotes with line items, quantities, and calculations
+- 📦 **Product Catalog** - Maintain a catalog with 4 product types: Solution, OEM Kit, Accessories, Software
+- 📝 **Quote Generation** - Create professional quotes with per-item price overrides, quantities, and calculations
 - 🛒 **Order Tracking** - Convert quotes to orders and track their status
 - 📄 **PDF Export** - Generate PDF quotes for clients
 - ⚙️ **Settings** - Configure company information and quote templates

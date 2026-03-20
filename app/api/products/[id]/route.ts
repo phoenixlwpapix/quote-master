@@ -28,8 +28,9 @@ export async function PUT(
         const { id } = await params;
         const body = await request.json();
 
+        const VALID_TYPES = ['solution', 'oem_kit', 'accessories', 'software'] as const;
         const product = await updateProduct(parseInt(id, 10), {
-            product_type: body.product_type === 'oem_kit' ? 'oem_kit' : body.product_type === 'solution' ? 'solution' : undefined,
+            product_type: VALID_TYPES.includes(body.product_type) ? body.product_type : undefined,
             sku: body.sku?.trim(),
             name: body.name?.trim(),
             description: body.description?.trim(),

@@ -120,7 +120,7 @@ export const quotes = pgTable('quotes', {
 export const quoteItems = pgTable('quote_items', {
     id: serial('id').primaryKey(),
     quote_id: integer('quote_id').references(() => quotes.id, { onDelete: 'cascade' }),
-    product_id: integer('product_id').references(() => products.id).notNull(),
+    product_id: integer('product_id').references(() => products.id, { onDelete: 'set null' }),
     product_name: text('product_name').notNull(),
     product_sku: text('product_sku').notNull(),
     unit_price: doublePrecision('unit_price').notNull(),
@@ -150,7 +150,7 @@ export const orders = pgTable('orders', {
 export const orderItems = pgTable('order_items', {
     id: serial('id').primaryKey(),
     order_id: integer('order_id').references(() => orders.id, { onDelete: 'cascade' }),
-    product_id: integer('product_id').references(() => products.id).notNull(),
+    product_id: integer('product_id').references(() => products.id, { onDelete: 'set null' }),
     product_name: text('product_name').notNull(),
     product_sku: text('product_sku').notNull(),
     unit_price: doublePrecision('unit_price').notNull(),
