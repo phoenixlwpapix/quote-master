@@ -26,7 +26,7 @@ const withCountsSelect = (userId: string) => ({
     notes: customers.notes,
     created_at: customers.created_at,
     updated_at: customers.updated_at,
-    contact_count: sql<number>`(SELECT COUNT(*)::int FROM contacts WHERE contacts.customer_id = ${customers.id})`,
+    contact_count: sql<number>`(SELECT COUNT(*)::int FROM contacts WHERE contacts.customer_id = "customers"."id")`,
     quote_count: sql<number>`(SELECT COUNT(*)::int FROM quotes WHERE quotes.customer_name = ${customers.name} AND quotes.user_id = ${userId})`,
     order_count: sql<number>`(SELECT COUNT(*)::int FROM orders WHERE orders.customer_name = ${customers.name} AND orders.user_id = ${userId})`,
 });
