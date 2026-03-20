@@ -89,6 +89,7 @@ export function useCreateQuote() {
         mutationFn: quotesAPI.create,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.quotes });
+            queryClient.invalidateQueries({ queryKey: queryKeys.customers });
         },
     });
 }
@@ -110,6 +111,7 @@ export function useDeleteQuote() {
         mutationFn: quotesAPI.delete,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.quotes });
+            queryClient.invalidateQueries({ queryKey: queryKeys.customers });
         },
     });
 }
@@ -121,6 +123,7 @@ export function useConvertQuoteToOrder() {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.quotes });
             queryClient.invalidateQueries({ queryKey: queryKeys.orders });
+            queryClient.invalidateQueries({ queryKey: queryKeys.customers });
         },
     });
 }
@@ -159,6 +162,7 @@ export function useDeleteOrder() {
         mutationFn: ordersAPI.delete,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: queryKeys.orders });
+            queryClient.invalidateQueries({ queryKey: queryKeys.customers });
         },
     });
 }
