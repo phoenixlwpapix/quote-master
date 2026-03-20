@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Tag, RefreshCw, Server, Cpu, Package, Code2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, RefreshCw, Server, Cpu, Package, Code2, Check, X } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
@@ -67,6 +67,10 @@ function ProductsContent() {
     const [newCategory, setNewCategory] = useState('');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [editingCatId, setEditingCatId] = useState<number | null>(null);
+    const [editingCatName, setEditingCatName] = useState('');
+    const [deletingCatId, setDeletingCatId] = useState<number | null>(null);
+    const [catActionLoading, setCatActionLoading] = useState(false);
 
     const [formData, setFormData] = useState({
         product_type: 'solution' as ProductType,
@@ -168,6 +172,37 @@ function ProductsContent() {
             refetchCategories();
         } catch (error) {
             console.error('Error adding category:', error);
+        }
+    };
+
+    const handleUpdateCategory = async (id: number) => {
+        if (!editingCatName.trim()) return;
+        setCatActionLoading(true);
+        try {
+            await fetch(`/api/categories/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: editingCatName.trim() }),
+            });
+            setEditingCatId(null);
+            refetchCategories();
+        } catch (error) {
+            console.error('Error updating category:', error);
+        } finally {
+            setCatActionLoading(false);
+        }
+    };
+
+    const handleDeleteCategory = async (id: number) => {
+        setCatActionLoading(true);
+        try {
+            await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+            setDeletingCatId(null);
+            refetchCategories();
+        } catch (error) {
+            console.error('Error deleting category:', error);
+        } finally {
+            setCatActionLoading(false);
         }
     };
 
@@ -493,7 +528,7 @@ function ProductsContent() {
             {/* Series Modal */}
             <Modal
                 isOpen={isCategoryModalOpen}
-                onClose={() => setIsCategoryModalOpen(false)}
+                onClose={() => { setIsCategoryModalOpen(false); setEditingCatId(null); setDeletingCatId(null); }}
                 title="Manage Product Series"
                 size="sm"
             >
@@ -510,8 +545,69 @@ function ProductsContent() {
                     </form>
                     <div className="space-y-2">
                         {categories.map((cat) => (
-                            <div key={cat.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50">
-                                <span className="text-white">{cat.name}</span>
+                            <div key={cat.id} className="rounded-lg bg-slate-700/50 overflow-hidden">
+                                {editingCatId === cat.id ? (
+                                    <div className="flex items-center gap-2 p-2">
+                                        <input
+                                            type="text"
+                                            value={editingCatName}
+                                            onChange={(e) => setEditingCatName(e.target.value)}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') handleUpdateCategory(cat.id); if (e.key === 'Escape') setEditingCatId(null); }}
+                                            autoFocus
+                                            className="flex-1 text-sm"
+                                        />
+                                        <button
+                                            onClick={() => handleUpdateCategory(cat.id)}
+                                            disabled={catActionLoading}
+                                            className="p-1.5 rounded text-emerald-400 hover:bg-slate-600 transition-colors"
+                                        >
+                                            <Check size={15} />
+                                        </button>
+                                        <button
+                                            onClick={() => setEditingCatId(null)}
+                                            className="p-1.5 rounded text-slate-400 hover:bg-slate-600 transition-colors"
+                                        >
+                                            <X size={15} />
+                                        </button>
+                                    </div>
+                                ) : deletingCatId === cat.id ? (
+                                    <div className="flex items-center justify-between px-3 py-2.5">
+                                        <span className="text-sm text-slate-300">Delete &quot;{cat.name}&quot;?</span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => handleDeleteCategory(cat.id)}
+                                                disabled={catActionLoading}
+                                                className="px-2.5 py-1 text-xs rounded bg-red-600 hover:bg-red-500 text-white transition-colors"
+                                            >
+                                                {catActionLoading ? '...' : 'Delete'}
+                                            </button>
+                                            <button
+                                                onClick={() => setDeletingCatId(null)}
+                                                className="px-2.5 py-1 text-xs rounded bg-slate-600 hover:bg-slate-500 text-white transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between px-3 py-2.5">
+                                        <span className="text-white text-sm">{cat.name}</span>
+                                        <div className="flex gap-1">
+                                            <button
+                                                onClick={() => { setEditingCatId(cat.id); setEditingCatName(cat.name); setDeletingCatId(null); }}
+                                                className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-slate-600 transition-colors"
+                                            >
+                                                <Edit2 size={14} />
+                                            </button>
+                                            <button
+                                                onClick={() => { setDeletingCatId(cat.id); setEditingCatId(null); }}
+                                                className="p-1.5 rounded text-slate-400 hover:text-red-400 hover:bg-slate-600 transition-colors"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))}
                         {categories.length === 0 && (

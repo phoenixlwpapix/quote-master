@@ -35,7 +35,9 @@ export async function PUT(
             name: body.name?.trim(),
             description: body.description?.trim(),
             unit_price: body.unit_price !== undefined ? parseFloat(body.unit_price) : undefined,
-            category_id: body.category_id !== undefined ? parseInt(body.category_id, 10) : undefined,
+            category_id: body.category_id !== undefined
+                ? (body.category_id === '' || body.category_id === null ? null : parseInt(body.category_id, 10))
+                : undefined,
         });
 
         if (!product) {

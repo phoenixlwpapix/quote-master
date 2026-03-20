@@ -34,8 +34,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const validTypes = ['solution', 'oem_kit', 'accessories', 'software'];
         const product = await createProduct({
-            product_type: body.product_type === 'oem_kit' ? 'oem_kit' : 'solution',
+            product_type: validTypes.includes(body.product_type) ? body.product_type : 'solution',
             sku: body.sku.trim(),
             name: body.name.trim(),
             description: body.description?.trim() || null,

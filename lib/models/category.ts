@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { categories } from '../schema';
+import { categories, products } from '../schema';
 import { eq, asc } from 'drizzle-orm';
 import type { Category, CreateCategoryInput } from '../types';
 
@@ -29,7 +29,15 @@ export async function createCategory(input: CreateCategoryInput): Promise<Catego
     return mapCategory(result[0]);
 }
 
+export async function updateCategory(id: number, name: string): Promise<Category | undefined> {
+    const result = await db.update(categories).set({ name }).where(eq(categories.id, id)).returning();
+    if (result.length === 0) return undefined;
+    return mapCategory(result[0]);
+}
+
 export async function deleteCategory(id: number): Promise<boolean> {
+    // Unlink products before deleting to avoid FK constraint violation
+    await db.update(products).set({ category_id: null }).where(eq(products.category_id, id));
     const result = await db.delete(categories).where(eq(categories.id, id)).returning({ id: categories.id });
     return result.length > 0;
 }

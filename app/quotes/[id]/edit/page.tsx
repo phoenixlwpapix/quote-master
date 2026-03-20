@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Trash2, Search, ArrowLeft, User, GripVertical } from 'lucide-react';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import Link from 'next/link';
+import QuickAddProductModal from '@/components/QuickAddProductModal';
 import type { Product, Customer } from '@/lib/types';
 
 interface LineItem {
@@ -49,6 +50,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
     const [deliveryWeeks, setDeliveryWeeks] = useState<string>('');
 
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const [showQuickAdd, setShowQuickAdd] = useState(false);
 
     // Drag and drop for reordering line items
     const { getDragProps, getRowClassName } = useDragAndDrop({
@@ -136,6 +138,12 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
         } catch (error) {
             console.error('Error fetching products:', error);
         }
+    };
+
+    const handleProductCreated = (product: Product) => {
+        setProducts((prev) => [...prev, product]);
+        addLineItem(product);
+        setShowQuickAdd(false);
     };
 
     const handleSearch = useCallback((term: string) => {
@@ -493,7 +501,17 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                                 <Plus size={14} className="inline mr-1.5" />
                                 Add Products from Catalog
                             </label>
-                            <span className="text-xs text-slate-500">{products.length} products available</span>
+                            <div className="flex items-center gap-3">
+                                <span className="text-xs text-slate-500">{products.length} products available</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowQuickAdd(true)}
+                                    className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-slate-700 hover:bg-brand-600 text-slate-300 hover:text-white transition-colors"
+                                >
+                                    <Plus size={12} />
+                                    New Product
+                                </button>
+                            </div>
                         </div>
 
                         {/* Search Filter */}
@@ -772,6 +790,12 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                     </button>
                 </div>
             </form>
+
+            <QuickAddProductModal
+                isOpen={showQuickAdd}
+                onClose={() => setShowQuickAdd(false)}
+                onProductCreated={handleProductCreated}
+            />
         </div>
     );
 }
