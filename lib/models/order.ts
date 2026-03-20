@@ -114,6 +114,8 @@ export async function convertQuoteToOrder(quoteId: number): Promise<Order | unde
             subtotal: quote.subtotal,
             discount_percent: quote.discount_percent,
             discount_amount: quote.discount_amount,
+            shipping_fee: quote.shipping_fee,
+            incoterm: quote.incoterm,
             total: quote.total,
             notes: quote.notes,
             status: 'pending',

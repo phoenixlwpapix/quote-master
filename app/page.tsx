@@ -277,7 +277,7 @@ export default function DashboardPage() {
   const stats = [
     { label: 'Total Products',    value: products.length,                                icon: Package,     color: 'bg-blue-500',    href: '/products' },
     { label: 'Active Quotes',     value: quoteStats.draft + quoteStats.sent,             icon: FileText,    color: 'bg-brand-500',   href: '/quotes' },
-    { label: 'Pending Orders',    value: orderStats.pending + orderStats.processing,     icon: ShoppingCart,color: 'bg-amber-500',   href: '/orders' },
+    { label: 'Processing Orders', value: orderStats.processing,                          icon: ShoppingCart,color: 'bg-amber-500',   href: '/orders' },
     { label: 'Completed Orders',  value: orderStats.completed,                           icon: TrendingUp,  color: 'bg-purple-500',  href: '/orders?status=completed' },
   ];
 

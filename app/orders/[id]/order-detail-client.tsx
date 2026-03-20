@@ -209,6 +209,12 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                                     <span>-{formatCurrency(order.discount_amount)}</span>
                                 </div>
                             )}
+                            {order.shipping_fee > 0 && (
+                                <div className="flex justify-between text-blue-400">
+                                    <span>Shipping Fee{order.incoterm ? ` (${order.incoterm})` : ''}</span>
+                                    <span>+{formatCurrency(order.shipping_fee)}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between text-lg font-bold text-white border-t border-slate-700 pt-2">
                                 <span>Total</span>
                                 <span className="text-brand-400">{formatCurrency(order.total)}</span>

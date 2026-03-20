@@ -141,6 +141,8 @@ export const orders = pgTable('orders', {
     subtotal: doublePrecision('subtotal').notNull(),
     discount_percent: doublePrecision('discount_percent').default(0).notNull(),
     discount_amount: doublePrecision('discount_amount').default(0).notNull(),
+    shipping_fee: doublePrecision('shipping_fee').default(0).notNull(),
+    incoterm: text('incoterm'),
     total: doublePrecision('total').notNull(),
     issue_date: text('issue_date'),
     notes: text('notes'),

@@ -107,6 +107,8 @@ export interface Order {
     subtotal: number;
     discount_percent: number;
     discount_amount: number;
+    shipping_fee: number;
+    incoterm: string | null;
     total: number;
     issue_date: string | null;
     notes: string | null;
