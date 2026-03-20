@@ -76,6 +76,7 @@ export interface Quote {
     shipping_fee: number;
     incoterm: string | null;
     total: number;
+    issue_date: string | null;
     notes: string | null;
     valid_until: string | null;
     status: 'draft' | 'sent' | 'approved' | 'rejected' | 'expired';
@@ -107,6 +108,7 @@ export interface Order {
     discount_percent: number;
     discount_amount: number;
     total: number;
+    issue_date: string | null;
     notes: string | null;
     status: 'pending' | 'processing' | 'completed' | 'cancelled';
     created_at: string;
@@ -128,6 +130,7 @@ export interface CreateQuoteInput {
     discount_percent?: number;
     shipping_fee?: number;
     incoterm?: string;
+    issue_date?: string;
     notes?: string;
     valid_until?: string;
     items: Omit<QuoteItem, 'id' | 'quote_id' | 'line_total'>[];
@@ -140,6 +143,7 @@ export interface UpdateQuoteInput extends Partial<Omit<CreateQuoteInput, 'items'
 
 export interface UpdateOrderInput {
     status?: Order['status'];
+    issue_date?: string | null;
     notes?: string;
 }
 

@@ -31,6 +31,7 @@ export default function NewQuotePage() {
     const [customerSearchResults, setCustomerSearchResults] = useState<Customer[]>([]);
     const [showCustomerSearch, setShowCustomerSearch] = useState(false);
 
+    const today = new Date().toISOString().split('T')[0];
     const [formData, setFormData] = useState({
         customer_name: '',
         customer_email: '',
@@ -39,6 +40,7 @@ export default function NewQuotePage() {
         discount_percent: 0,
         shipping_fee: 0,
         incoterm: '',
+        issue_date: today,
         notes: '',
         valid_until: '',
     });
@@ -260,6 +262,7 @@ export default function NewQuotePage() {
                                 placeholder="Type to search customers by name, company, or email..."
                                 className="w-full pl-11 pr-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
                                 style={{ paddingLeft: '2.75rem' }}
+                                autoComplete="off"
                             />
 
                             {/* Customer List Dropdown */}
@@ -332,6 +335,7 @@ export default function NewQuotePage() {
                                 required
                                 className="w-full"
                                 placeholder="Customer or company name"
+                                autoComplete="off"
                             />
                         </div>
                         <div>
@@ -344,6 +348,7 @@ export default function NewQuotePage() {
                                 onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
                                 className="w-full"
                                 placeholder="customer@example.com"
+                                autoComplete="off"
                             />
                         </div>
                         <div>
@@ -356,6 +361,18 @@ export default function NewQuotePage() {
                                 onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
                                 className="w-full"
                                 placeholder="+1 (555) 000-0000"
+                                autoComplete="off"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                                Issue Date
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.issue_date}
+                                onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
+                                className="w-full"
                             />
                         </div>
                         <div>

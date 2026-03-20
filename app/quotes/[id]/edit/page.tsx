@@ -41,6 +41,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
         discount_percent: 0,
         shipping_fee: 0,
         incoterm: '',
+        issue_date: '',
         notes: '',
         valid_until: '',
     });
@@ -88,6 +89,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                     discount_percent: data.discount_percent || 0,
                     shipping_fee: data.shipping_fee || 0,
                     incoterm: data.incoterm || '',
+                    issue_date: data.issue_date || '',
                     notes: data.notes || '',
                     valid_until: data.valid_until ? new Date(data.valid_until).toISOString().split('T')[0] : '',
                 });
@@ -323,6 +325,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                                 placeholder="Type to search customers by name, company, or email..."
                                 className="w-full pl-11 pr-4 py-2.5 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-brand-500"
                                 style={{ paddingLeft: '2.75rem' }}
+                                autoComplete="off"
                             />
 
                             {/* Customer List Dropdown */}
@@ -395,6 +398,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                                 required
                                 className="w-full"
                                 placeholder="Customer or company name"
+                                autoComplete="off"
                             />
                         </div>
                         <div>
@@ -407,6 +411,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                                 onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
                                 className="w-full"
                                 placeholder="customer@example.com"
+                                autoComplete="off"
                             />
                         </div>
                         <div>
@@ -419,6 +424,18 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                                 onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
                                 className="w-full"
                                 placeholder="+1 (555) 000-0000"
+                                autoComplete="off"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                                Issue Date
+                            </label>
+                            <input
+                                type="date"
+                                value={formData.issue_date}
+                                onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
+                                className="w-full"
                             />
                         </div>
                         <div>

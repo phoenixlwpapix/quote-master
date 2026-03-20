@@ -30,6 +30,7 @@ export async function PUT(
 
         const order = await updateOrder(parseInt(id, 10), {
             status: body.status,
+            issue_date: body.issue_date !== undefined ? (body.issue_date || null) : undefined,
             notes: body.notes?.trim(),
         });
 

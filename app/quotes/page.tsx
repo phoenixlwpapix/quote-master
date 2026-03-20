@@ -83,10 +83,12 @@ export default function QuotesPage() {
             render: (quote: Quote) => quote.valid_until ? formatDate(quote.valid_until) : '-',
         },
         {
-            key: 'created_at',
-            label: 'Created',
+            key: 'issue_date',
+            label: 'Issue Date',
             sortable: true,
-            render: (quote: Quote) => formatDate(quote.created_at),
+            render: (quote: Quote) => quote.issue_date ? formatDate(quote.issue_date) : (
+                <span className="text-slate-500 text-xs">—</span>
+            ),
         },
         {
             key: 'actions',

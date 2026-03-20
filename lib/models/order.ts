@@ -10,6 +10,7 @@ import { requireUserId } from '../auth/get-user';
 function mapOrder(row: typeof orders.$inferSelect): Order {
     return {
         ...row,
+        issue_date: row.issue_date ?? null,
         created_at: row.created_at?.toISOString() ?? new Date().toISOString(),
         updated_at: row.updated_at?.toISOString() ?? new Date().toISOString(),
         status: row.status as Order['status'],
@@ -149,6 +150,7 @@ export async function updateOrder(id: number, input: UpdateOrderInput): Promise<
 
     const setValues: Record<string, unknown> = { updated_at: new Date() };
     if (input.status !== undefined) setValues.status = input.status;
+    if (input.issue_date !== undefined) setValues.issue_date = input.issue_date ?? null;
     if (input.notes !== undefined) setValues.notes = input.notes;
 
     const updated = await db.update(orders).set(setValues)

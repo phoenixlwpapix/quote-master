@@ -19,17 +19,19 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
     const [order, setOrder] = useState<Order>(initialOrder);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [newStatus, setNewStatus] = useState<string>(order.status);
+    const [newIssueDate, setNewIssueDate] = useState<string>(order.issue_date ?? '');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
     const handleStatusUpdate = async () => {
-        if (newStatus === order.status) return;
-
         try {
             const res = await fetch(`/api/orders/${order.id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus }),
+                body: JSON.stringify({
+                    status: newStatus,
+                    issue_date: newIssueDate || null,
+                }),
             });
 
             if (res.ok) {
@@ -93,7 +95,9 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                             <h1 className="text-3xl font-bold text-white">{order.order_number}</h1>
                             <StatusBadge status={order.status} type="order" />
                         </div>
-                        <p className="text-slate-400 mt-1">Created on {formatDate(order.created_at)}</p>
+                        <p className="text-slate-400 mt-1">
+                            {order.issue_date ? `Issue Date: ${formatDate(order.issue_date)}` : `Created: ${formatDate(order.created_at)}`}
+                        </p>
                     </div>
                 </div>
 
@@ -226,7 +230,7 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
             <Modal
                 isOpen={isStatusModalOpen}
                 onClose={() => setIsStatusModalOpen(false)}
-                title="Update Order Status"
+                title="Update Order"
                 size="sm"
             >
                 <div className="space-y-4">
@@ -244,6 +248,17 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                             ))}
                         </select>
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                            Issue Date
+                        </label>
+                        <input
+                            type="date"
+                            value={newIssueDate}
+                            onChange={(e) => setNewIssueDate(e.target.value)}
+                            className="w-full"
+                        />
+                    </div>
                     <div className="flex justify-end gap-3">
                         <button
                             onClick={() => setIsStatusModalOpen(false)}
@@ -252,7 +267,7 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
                             Cancel
                         </button>
                         <button onClick={handleStatusUpdate} className="btn btn-primary">
-                            Update Status
+                            Save
                         </button>
                     </div>
                 </div>

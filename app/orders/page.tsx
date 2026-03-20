@@ -55,10 +55,12 @@ export default function OrdersPage() {
             render: (order: Order) => <StatusBadge status={order.status} type="order" />,
         },
         {
-            key: 'created_at',
-            label: 'Created',
+            key: 'issue_date',
+            label: 'Issue Date',
             sortable: true,
-            render: (order: Order) => formatDate(order.created_at),
+            render: (order: Order) => order.issue_date ? formatDate(order.issue_date) : (
+                <span className="text-slate-500 text-xs">—</span>
+            ),
         },
         {
             key: 'actions',

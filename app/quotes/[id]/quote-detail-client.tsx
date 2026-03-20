@@ -124,7 +124,9 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                             <h1 className="text-3xl font-bold text-white">{quote.quote_number}</h1>
                             <StatusBadge status={quote.status} />
                         </div>
-                        <p className="text-slate-400 mt-1">Created on {formatDate(quote.created_at)}</p>
+                        <p className="text-slate-400 mt-1">
+                            {quote.issue_date ? `Issue Date: ${formatDate(quote.issue_date)}` : `Created: ${formatDate(quote.created_at)}`}
+                        </p>
                     </div>
                 </div>
 
