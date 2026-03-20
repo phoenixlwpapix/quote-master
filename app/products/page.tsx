@@ -3,24 +3,26 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Tag, RefreshCw, Server, Cpu } from 'lucide-react';
+import { Plus, Edit2, Trash2, Tag, RefreshCw, Server, Cpu, Package, Code2 } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/use-queries';
-import type { Product, Category } from '@/lib/types';
-
-type ProductType = 'solution' | 'oem_kit';
+import type { Product, Category, ProductType } from '@/lib/types';
 
 const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
     solution: 'Solution',
     oem_kit: 'OEM Kit',
+    accessories: 'Accessories',
+    software: 'Software',
 };
 
 const PRODUCT_TYPE_DESCRIPTIONS: Record<ProductType, string> = {
     solution: 'Rack + Analysis Module + Software',
     oem_kit: 'Motherboard + Analysis Module + Software',
+    accessories: 'Hardware accessories & spare parts',
+    software: 'Software licenses & subscriptions',
 };
 
 function ProductTypeBadge({ type }: { type: ProductType }) {
@@ -29,6 +31,22 @@ function ProductTypeBadge({ type }: { type: ProductType }) {
             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-500/15 text-amber-400">
                 <Cpu size={11} />
                 OEM Kit
+            </span>
+        );
+    }
+    if (type === 'accessories') {
+        return (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-400">
+                <Package size={11} />
+                Accessories
+            </span>
+        );
+    }
+    if (type === 'software') {
+        return (
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-violet-500/15 text-violet-400">
+                <Code2 size={11} />
+                Software
             </span>
         );
     }
@@ -74,6 +92,8 @@ function ProductsContent() {
 
     const solutionCount = products.filter((p) => p.product_type === 'solution').length;
     const oemKitCount = products.filter((p) => p.product_type === 'oem_kit').length;
+    const accessoriesCount = products.filter((p) => p.product_type === 'accessories').length;
+    const softwareCount = products.filter((p) => p.product_type === 'software').length;
 
     useEffect(() => {
         if (searchParams.get('new') === 'true') {
@@ -235,7 +255,7 @@ function ProductsContent() {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold text-white">Products</h1>
-                    <p className="text-slate-400 mt-1">Manage solutions & OEM kits</p>
+                    <p className="text-slate-400 mt-1">Manage your product catalog</p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -291,6 +311,28 @@ function ProductsContent() {
                     OEM Kits
                     <span className="text-xs opacity-70">{oemKitCount}</span>
                 </button>
+                <button
+                    onClick={() => setFilterType(filterType === 'accessories' ? '' : 'accessories')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterType === 'accessories'
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                >
+                    <Package size={13} />
+                    Accessories
+                    <span className="text-xs opacity-70">{accessoriesCount}</span>
+                </button>
+                <button
+                    onClick={() => setFilterType(filterType === 'software' ? '' : 'software')}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${filterType === 'software'
+                        ? 'bg-violet-500/20 text-violet-400'
+                        : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 hover:text-white'
+                        }`}
+                >
+                    <Code2 size={13} />
+                    Software
+                    <span className="text-xs opacity-70">{softwareCount}</span>
+                </button>
                 {productsFetching && <span className="text-slate-400 text-sm ml-2">Updating...</span>}
             </div>
 
@@ -300,7 +342,7 @@ function ProductsContent() {
                 columns={columns}
                 searchable
                 searchPlaceholder="Search by model no. or name..."
-                emptyMessage="No products found. Add your first solution or OEM kit to get started."
+                emptyMessage="No products found. Add your first product to get started."
             />
 
             {/* Product Modal */}
@@ -317,27 +359,31 @@ function ProductsContent() {
                             Product Type *
                         </label>
                         <div className="grid grid-cols-2 gap-3">
-                            {(['solution', 'oem_kit'] as ProductType[]).map((type) => (
-                                <button
-                                    key={type}
-                                    type="button"
-                                    onClick={() => setFormData({ ...formData, product_type: type })}
-                                    className={`flex flex-col items-start gap-0.5 p-3 rounded-lg border text-left transition-all ${formData.product_type === type
-                                        ? type === 'solution'
-                                            ? 'border-brand-500 bg-brand-500/10'
-                                            : 'border-amber-500 bg-amber-500/10'
-                                        : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
-                                        }`}
-                                >
-                                    <span className={`text-sm font-medium ${formData.product_type === type
-                                        ? type === 'solution' ? 'text-brand-400' : 'text-amber-400'
-                                        : 'text-slate-300'
-                                        }`}>
-                                        {PRODUCT_TYPE_LABELS[type]}
-                                    </span>
-                                    <span className="text-xs text-slate-500">{PRODUCT_TYPE_DESCRIPTIONS[type]}</span>
-                                </button>
-                            ))}
+                            {(['solution', 'oem_kit', 'accessories', 'software'] as ProductType[]).map((type) => {
+                                const colorMap: Record<ProductType, { active: string; text: string }> = {
+                                    solution: { active: 'border-brand-500 bg-brand-500/10', text: 'text-brand-400' },
+                                    oem_kit: { active: 'border-amber-500 bg-amber-500/10', text: 'text-amber-400' },
+                                    accessories: { active: 'border-emerald-500 bg-emerald-500/10', text: 'text-emerald-400' },
+                                    software: { active: 'border-violet-500 bg-violet-500/10', text: 'text-violet-400' },
+                                };
+                                const isActive = formData.product_type === type;
+                                return (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, product_type: type })}
+                                        className={`flex flex-col items-start gap-0.5 p-3 rounded-lg border text-left transition-all ${isActive
+                                            ? colorMap[type].active
+                                            : 'border-slate-700 bg-slate-800/50 hover:border-slate-600'
+                                            }`}
+                                    >
+                                        <span className={`text-sm font-medium ${isActive ? colorMap[type].text : 'text-slate-300'}`}>
+                                            {PRODUCT_TYPE_LABELS[type]}
+                                        </span>
+                                        <span className="text-xs text-slate-500">{PRODUCT_TYPE_DESCRIPTIONS[type]}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     </div>
 
@@ -395,9 +441,14 @@ function ProductsContent() {
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                             rows={3}
                             className="w-full"
-                            placeholder={formData.product_type === 'solution'
-                                ? 'e.g., 4U Rack × 1, Model X Analysis Module × 2, Analytics Suite v3 License × 1'
-                                : 'e.g., ATX Motherboard × 1, Model X Analysis Module × 2, Analytics Suite OEM License × 1'
+                            placeholder={
+                                formData.product_type === 'solution'
+                                    ? 'e.g., 4U Rack × 1, Model X Analysis Module × 2, Analytics Suite v3 License × 1'
+                                    : formData.product_type === 'oem_kit'
+                                        ? 'e.g., ATX Motherboard × 1, Model X Analysis Module × 2, Analytics Suite OEM License × 1'
+                                        : formData.product_type === 'accessories'
+                                            ? 'e.g., Mounting bracket, cable kit, spare sensors'
+                                            : 'e.g., Annual subscription license, number of seats, platform support'
                             }
                         />
                     </div>

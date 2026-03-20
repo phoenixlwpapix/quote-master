@@ -41,7 +41,7 @@ export type UpdateContactInput = Partial<CreateContactInput>;
 
 export interface Product {
     id: number;
-    product_type: 'solution' | 'oem_kit';
+    product_type: 'solution' | 'oem_kit' | 'accessories' | 'software';
     sku: string;
     name: string;
     description: string | null;
@@ -116,6 +116,7 @@ export interface Order {
 
 // Input types for creating/updating
 export type CreateCategoryInput = Pick<Category, 'name'>;
+export type ProductType = 'solution' | 'oem_kit' | 'accessories' | 'software';
 export type CreateProductInput = Omit<Product, 'id' | 'created_at' | 'updated_at' | 'category_name'>;
 export type UpdateProductInput = Partial<CreateProductInput>;
 

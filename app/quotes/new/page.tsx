@@ -12,6 +12,7 @@ interface LineItem {
     product_name: string;
     product_sku: string;
     unit_price: number;
+    list_price: number; // original catalog price for reference
     quantity: number;
     line_total: number;
 }
@@ -130,6 +131,7 @@ export default function NewQuotePage() {
                 product_name: product.name,
                 product_sku: product.sku,
                 unit_price: product.unit_price,
+                list_price: product.unit_price,
                 quantity: 1,
                 line_total: product.unit_price,
             }]);
@@ -151,6 +153,14 @@ export default function NewQuotePage() {
 
     const removeLineItem = (productId: number) => {
         setLineItems(lineItems.filter(item => item.product_id !== productId));
+    };
+
+    const updateUnitPrice = (productId: number, price: number) => {
+        setLineItems(lineItems.map(item =>
+            item.product_id === productId
+                ? { ...item, unit_price: price, line_total: price * item.quantity }
+                : item
+        ));
     };
 
     const calculateSubtotal = () => {
@@ -476,7 +486,7 @@ export default function NewQuotePage() {
                                     <tr>
                                         <th className="pb-3 w-8"></th>
                                         <th className="pb-3">Product</th>
-                                        <th className="pb-3 text-right">Unit Price</th>
+                                        <th className="pb-3 text-right">Unit Price <span className="text-slate-600 font-normal text-xs">(editable)</span></th>
                                         <th className="pb-3 text-center">Quantity</th>
                                         <th className="pb-3 text-right">Total</th>
                                         <th className="pb-3"></th>
@@ -498,8 +508,20 @@ export default function NewQuotePage() {
                                                 <p className="font-medium text-white">{item.product_name}</p>
                                                 <p className="text-sm text-slate-400">{item.product_sku}</p>
                                             </td>
-                                            <td className="py-3 text-right text-slate-300">
-                                                {formatCurrency(item.unit_price)}
+                                            <td className="py-3 text-right">
+                                                <div className="flex flex-col items-end gap-0.5">
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        value={item.unit_price}
+                                                        onChange={(e) => updateUnitPrice(item.product_id, parseFloat(e.target.value) || 0)}
+                                                        className="w-28 text-right bg-slate-800 border border-slate-600 rounded px-2 py-1 text-slate-200 text-sm focus:border-brand-500 focus:outline-none"
+                                                    />
+                                                    {item.unit_price !== item.list_price && (
+                                                        <span className="text-xs text-slate-500 line-through">{formatCurrency(item.list_price)}</span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="py-3">
                                                 <div className="flex items-center justify-center gap-2">
