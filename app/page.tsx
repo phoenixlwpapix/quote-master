@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Package, FileText, ShoppingCart, TrendingUp, RefreshCw, Plus } from 'lucide-react';
+import { FileText, ShoppingCart, TrendingUp, RefreshCw, Plus } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
 import { PageSkeleton } from '@/components/Skeleton';
@@ -276,7 +276,7 @@ export default function DashboardPage() {
   const recentOrders = orders.slice(0, 5);
 
   const stats = [
-    { label: 'Total Products',    value: products.length,                                icon: Package,     color: 'bg-blue-500',    href: '/products' },
+    { label: 'Total Quotes',      value: quotes.length,                                  icon: FileText,    color: 'bg-blue-500',    href: '/quotes' },
     { label: 'Active Quotes',     value: quoteStats.draft + quoteStats.sent,             icon: FileText,    color: 'bg-brand-500',   href: '/quotes' },
     { label: 'Processing Orders', value: orderStats.processing,                          icon: ShoppingCart,color: 'bg-amber-500',   href: '/orders' },
     { label: 'Completed Orders',  value: orderStats.completed,                           icon: TrendingUp,  color: 'bg-purple-500',  href: '/orders?status=completed' },
@@ -297,9 +297,8 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold text-white">Dashboard</h1>
           <p className="text-slate-400 mt-1">Overview of your quotes and orders</p>
         </div>
-        <button onClick={handleRefresh} disabled={isFetching} className="btn btn-secondary" title="Refresh all data">
+        <button onClick={handleRefresh} disabled={isFetching} className="btn btn-secondary btn-icon" title="Refresh all data">
           <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
-          {isFetching ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 

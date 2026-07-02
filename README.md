@@ -10,7 +10,7 @@ A modern, multi-tenant quote and order management SaaS built with Next.js 16. Qu
 - 📦 **Product Catalog** - Maintain a catalog with 4 product types: Solution, OEM Kit, Accessories, Software
 - 📝 **Quote Generation** - Create professional quotes with per-item price overrides, quantities, and calculations
 - 🛒 **Order Tracking** - Convert quotes to orders and track their status
-- 📄 **PDF Export** - Generate PDF quotes for clients
+- 📄 **PDF Export** - Generate print-friendly PDF quotes for clients
 - ⚙️ **Settings** - Configure company information, quote templates, and preferred currency (EUR, USD, CNY)
 - 💱 **Dynamic Currency Display** - Product prices, quotes, orders, dashboards, and PDFs follow the selected company currency
 - 🔒 **Multi-tenancy** - Each user only sees their own data
