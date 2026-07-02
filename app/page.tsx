@@ -19,9 +19,6 @@ const ORDER_STATUS_CFG = {
 
 const ORDER_STATUS_ORDER: Order['status'][] = ['pending', 'processing', 'completed', 'cancelled'];
 
-const fmt = (v: number) =>
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v);
-
 // ─── Donut Chart ────────────────────────────────────────────────────────────
 
 function DonutChart({ segments }: {
@@ -67,7 +64,7 @@ function DonutChart({ segments }: {
 
 // ─── Order Revenue Pie ──────────────────────────────────────────────────────
 
-function OrderRevenuePie({ orders }: { orders: Order[] }) {
+function OrderRevenuePie({ orders, currency }: { orders: Order[]; currency: string }) {
   const currentYear = new Date().getFullYear();
 
   const availableYears = useMemo(() => {
@@ -94,13 +91,15 @@ function OrderRevenuePie({ orders }: { orders: Order[] }) {
 
   const grandTotal = byStatus.reduce((s, b) => s + b.total, 0);
   const segments = byStatus.map(b => ({ label: b.label, value: b.total, hex: b.hex }));
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
 
   return (
     <div className="card flex flex-col">
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-lg font-semibold text-white">Order Revenue</h2>
-          <p className="text-sm text-slate-400 mt-0.5">{fmt(grandTotal)} total</p>
+          <p className="text-sm text-slate-400 mt-0.5">{formatCurrency(grandTotal)} total</p>
         </div>
         <select
           value={year}
@@ -259,6 +258,7 @@ export default function DashboardPage() {
 
   const isLoading = productsLoading || quotesLoading || ordersLoading;
   const isFetching = productsFetching || quotesFetching || ordersFetching;
+  const currency = settings?.currency || 'EUR';
 
   const quoteStats = {
     draft: quotes.filter(q => q.status === 'draft').length,
@@ -283,7 +283,7 @@ export default function DashboardPage() {
   ];
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: settings?.currency || 'EUR' }).format(value);
+    new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
 
   const handleRefresh = () => { refetchProducts(); refetchQuotes(); refetchOrders(); };
 
@@ -325,7 +325,7 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <OrderRevenuePie orders={orders} />
+        <OrderRevenuePie orders={orders} currency={currency} />
         <QuoteConversionChart quotes={quotes} />
       </div>
 

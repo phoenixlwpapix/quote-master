@@ -14,6 +14,10 @@ export async function GET() {
 export async function PUT(request: Request) {
     try {
         const body = await request.json();
+        const supportedCurrencies = new Set(['EUR', 'USD', 'CNY']);
+        const currency = typeof body.currency === 'string' && supportedCurrencies.has(body.currency)
+            ? body.currency
+            : 'EUR';
 
         if (!body.company_name?.trim()) {
             return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
@@ -28,7 +32,7 @@ export async function PUT(request: Request) {
             tax_id: body.tax_id || null,
             logo_url: body.logo_url || null,
             footer_text: body.footer_text || null,
-            currency: body.currency || 'EUR',
+            currency,
         });
 
         return NextResponse.json(settings);

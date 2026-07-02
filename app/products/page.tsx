@@ -501,7 +501,7 @@ function ProductsContent() {
 
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">
-                            List Price (USD) *
+                            List Price ({settings?.currency || 'EUR'}) *
                         </label>
                         <input
                             type="number"

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Server, Cpu, Package, Code2 } from 'lucide-react';
 import Modal from './Modal';
+import { useSettings } from '@/hooks/use-queries';
 import type { Product, ProductType } from '@/lib/types';
 
 const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
@@ -38,6 +39,7 @@ interface QuickAddProductModalProps {
 }
 
 export default function QuickAddProductModal({ isOpen, onClose, onProductCreated }: QuickAddProductModalProps) {
+    const { data: settings } = useSettings();
     const [categories, setCategories] = useState<Category[]>([]);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -198,7 +200,7 @@ export default function QuickAddProductModal({ isOpen, onClose, onProductCreated
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-slate-300 mb-1">List Price (USD) *</label>
+                    <label className="block text-sm font-medium text-slate-300 mb-1">List Price ({settings?.currency || 'EUR'}) *</label>
                     <input
                         type="number"
                         step="0.01"
