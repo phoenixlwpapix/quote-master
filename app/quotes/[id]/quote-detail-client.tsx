@@ -9,6 +9,7 @@ import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 import QuoteProgressBar from '@/components/QuoteProgressBar';
 import type { Quote } from '@/lib/types';
+import { useSettings } from '@/hooks/use-queries';
 
 interface QuoteDetailClientProps {
     quote: Quote;
@@ -16,6 +17,7 @@ interface QuoteDetailClientProps {
 
 export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailClientProps) {
     const router = useRouter();
+    const { data: settings } = useSettings();
     const [quote, setQuote] = useState<Quote>(initialQuote);
     const [converting, setConverting] = useState(false);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -87,7 +89,7 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: settings?.currency || 'EUR',
         }).format(value);
     };
 

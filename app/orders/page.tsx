@@ -7,7 +7,7 @@ import { Eye, RefreshCw } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import StatusBadge from '@/components/StatusBadge';
 import { PageSkeleton } from '@/components/Skeleton';
-import { useOrders } from '@/hooks/use-queries';
+import { useOrders, useSettings } from '@/hooks/use-queries';
 import type { Order } from '@/lib/types';
 
 export default function OrdersPage() {
@@ -17,6 +17,8 @@ export default function OrdersPage() {
     // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
     const { data: orders = [], isLoading, isFetching, refetch } = useOrders();
 
+    const { data: settings } = useSettings();
+
     // 根据状态过滤数据（客户端过滤，避免额外请求）
     const filteredOrders = statusFilter
         ? orders.filter((o) => o.status === statusFilter)
@@ -25,7 +27,7 @@ export default function OrdersPage() {
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: settings?.currency || 'EUR',
         }).format(value);
     };
 

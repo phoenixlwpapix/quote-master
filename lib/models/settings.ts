@@ -32,6 +32,7 @@ export async function getCompanySettings(): Promise<CompanySettings> {
             tax_id: null,
             logo_url: null,
             footer_text: 'Thank you for your business!',
+            currency: 'EUR',
             updated_at: new Date().toISOString(),
         };
     }
@@ -55,6 +56,7 @@ export async function updateCompanySettings(input: UpdateCompanySettingsInput): 
         tax_id: input.tax_id,
         logo_url: input.logo_url,
         footer_text: input.footer_text,
+        currency: input.currency,
         updated_at: new Date(),
     };
 

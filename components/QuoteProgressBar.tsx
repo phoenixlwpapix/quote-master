@@ -17,7 +17,7 @@ export default function QuoteProgressBar({ status, createdAt, updatedAt }: Quote
     };
 
     // Define the steps dynamically based on the current status
-    let steps = [
+    const steps = [
         { id: 'draft', label: 'Draft', icon: FileEdit },
         { id: 'sent', label: 'Sent', icon: Send },
         { id: 'approved', label: 'Approved', icon: ThumbsUp },

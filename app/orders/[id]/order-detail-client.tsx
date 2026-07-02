@@ -9,6 +9,7 @@ import OrderProgressBar from '@/components/OrderProgressBar';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 import type { Order } from '@/lib/types';
+import { useSettings } from '@/hooks/use-queries';
 
 interface OrderDetailClientProps {
     order: Order;
@@ -16,6 +17,7 @@ interface OrderDetailClientProps {
 
 export default function OrderDetailClient({ order: initialOrder }: OrderDetailClientProps) {
     const router = useRouter();
+    const { data: settings } = useSettings();
     const [order, setOrder] = useState<Order>(initialOrder);
     const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
     const [newStatus, setNewStatus] = useState<string>(order.status);
@@ -62,7 +64,7 @@ export default function OrderDetailClient({ order: initialOrder }: OrderDetailCl
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: settings?.currency || 'EUR',
         }).format(value);
     };
 

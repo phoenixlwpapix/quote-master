@@ -11,7 +11,8 @@ A modern, multi-tenant quote and order management SaaS built with Next.js 16. Qu
 - 📝 **Quote Generation** - Create professional quotes with per-item price overrides, quantities, and calculations
 - 🛒 **Order Tracking** - Convert quotes to orders and track their status
 - 📄 **PDF Export** - Generate PDF quotes for clients
-- ⚙️ **Settings** - Configure company information and quote templates
+- ⚙️ **Settings** - Configure company information, quote templates, and preferred currency (EUR, USD, CNY)
+- 💱 **Dynamic Currency Display** - Product prices, quotes, orders, dashboards, and PDFs follow the selected company currency
 - 🔒 **Multi-tenancy** - Each user only sees their own data
 - ⚡ **Optimized Performance** - Client-side caching with React Query for instant navigation
 

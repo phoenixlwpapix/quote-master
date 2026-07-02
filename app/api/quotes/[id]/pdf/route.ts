@@ -18,7 +18,7 @@ export async function GET(
     const formatCurrency = (value: number) => {
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD',
+        currency: companySettings?.currency || 'EUR',
       }).format(value);
     };
 

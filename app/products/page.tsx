@@ -8,7 +8,7 @@ import DataTable from '@/components/DataTable';
 import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { PageSkeleton } from '@/components/Skeleton';
-import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct } from '@/hooks/use-queries';
+import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, useSettings } from '@/hooks/use-queries';
 import type { Product, Category, ProductType } from '@/lib/types';
 
 const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
@@ -59,6 +59,7 @@ function ProductTypeBadge({ type }: { type: ProductType }) {
 }
 
 function ProductsContent() {
+    const { data: settings } = useSettings();
     const searchParams = useSearchParams();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -224,7 +225,7 @@ function ProductsContent() {
     };
 
     const formatCurrency = (value: number) =>
-        new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        new Intl.NumberFormat('en-US', { style: 'currency', currency: settings?.currency || 'EUR' }).format(value);
 
     const columns = [
         {
@@ -500,7 +501,7 @@ function ProductsContent() {
 
                     <div>
                         <label className="block text-sm font-medium text-slate-300 mb-1">
-                            List Price (USD) *
+                            List Price ({settings?.currency || 'EUR'}) *
                         </label>
                         <input
                             type="number"

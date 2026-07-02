@@ -18,6 +18,7 @@ export default function SettingsPage() {
         tax_id: '',
         logo_url: '',
         footer_text: '',
+        currency: 'EUR',
     });
 
     // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
@@ -36,6 +37,7 @@ export default function SettingsPage() {
                 tax_id: settings.tax_id || '',
                 logo_url: settings.logo_url || '',
                 footer_text: settings.footer_text || '',
+                currency: settings.currency || 'EUR',
             });
         }
     }, [settings]);
@@ -172,6 +174,21 @@ export default function SettingsPage() {
                                     placeholder="XX-XXXXXXX"
                                 />
                             </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">
+                                Currency
+                            </label>
+                            <select
+                                value={formData.currency}
+                                onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                                className="w-full"
+                            >
+                                <option value="EUR">Euro (€)</option>
+                                <option value="USD">US Dollar ($)</option>
+                                <option value="CNY">Chinese Yuan (¥)</option>
+                            </select>
                         </div>
                     </div>
                 </div>
