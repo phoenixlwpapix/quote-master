@@ -17,7 +17,7 @@ export default function OrderProgressBar({ status, createdAt, updatedAt }: Order
     };
 
     // Define the steps dynamically based on the current status
-    let steps = [
+    const steps = [
         { id: 'pending', label: 'Pending', icon: Clock },
         { id: 'processing', label: 'Processing', icon: Truck },
         { id: 'completed', label: 'Completed', icon: CheckCircle },

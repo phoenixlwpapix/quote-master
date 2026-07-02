@@ -164,6 +164,7 @@ export interface CompanySettings {
     tax_id: string | null;
     logo_url: string | null;
     footer_text: string | null;
+    currency: string;
     updated_at: string;
 }
 

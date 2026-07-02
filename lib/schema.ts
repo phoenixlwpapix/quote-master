@@ -175,6 +175,7 @@ export const companySettings = pgTable('company_settings', {
     tax_id: text('tax_id'),
     logo_url: text('logo_url'),
     footer_text: text('footer_text').default('Thank you for your business!'),
+    currency: text('currency').default('EUR').notNull(),
     updated_at: timestamp('updated_at').defaultNow(),
 });
 

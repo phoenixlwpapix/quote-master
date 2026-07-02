@@ -28,6 +28,7 @@ export async function PUT(request: Request) {
             tax_id: body.tax_id || null,
             logo_url: body.logo_url || null,
             footer_text: body.footer_text || null,
+            currency: body.currency || 'EUR',
         });
 
         return NextResponse.json(settings);

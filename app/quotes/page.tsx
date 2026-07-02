@@ -8,7 +8,7 @@ import DataTable from '@/components/DataTable';
 import StatusBadge from '@/components/StatusBadge';
 import ConfirmModal from '@/components/ConfirmModal';
 import { PageSkeleton } from '@/components/Skeleton';
-import { useQuotes, useDeleteQuote } from '@/hooks/use-queries';
+import { useQuotes, useDeleteQuote, useSettings } from '@/hooks/use-queries';
 import type { Quote } from '@/lib/types';
 
 export default function QuotesPage() {
@@ -19,6 +19,7 @@ export default function QuotesPage() {
 
     // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
     const { data: quotes = [], isLoading, isFetching, refetch } = useQuotes();
+    const { data: settings } = useSettings();
     const deleteQuoteMutation = useDeleteQuote();
 
     // 根据状态过滤数据（客户端过滤，避免额外请求）
@@ -48,7 +49,7 @@ export default function QuotesPage() {
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: settings?.currency || 'EUR',
         }).format(value);
     };
 

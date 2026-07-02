@@ -5,7 +5,7 @@ import { Package, FileText, ShoppingCart, TrendingUp, RefreshCw, Plus } from 'lu
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
 import { PageSkeleton } from '@/components/Skeleton';
-import { useProducts, useQuotes, useOrders } from '@/hooks/use-queries';
+import { useProducts, useQuotes, useOrders, useSettings } from '@/hooks/use-queries';
 import type { Order, Quote } from '@/lib/types';
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
@@ -255,6 +255,7 @@ export default function DashboardPage() {
   const { data: products = [], isLoading: productsLoading, isFetching: productsFetching, refetch: refetchProducts } = useProducts();
   const { data: quotes = [], isLoading: quotesLoading, isFetching: quotesFetching, refetch: refetchQuotes } = useQuotes();
   const { data: orders = [], isLoading: ordersLoading, isFetching: ordersFetching, refetch: refetchOrders } = useOrders();
+  const { data: settings } = useSettings();
 
   const isLoading = productsLoading || quotesLoading || ordersLoading;
   const isFetching = productsFetching || quotesFetching || ordersFetching;
@@ -282,7 +283,7 @@ export default function DashboardPage() {
   ];
 
   const formatCurrency = (value: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: settings?.currency || 'EUR' }).format(value);
 
   const handleRefresh = () => { refetchProducts(); refetchQuotes(); refetchOrders(); };
 

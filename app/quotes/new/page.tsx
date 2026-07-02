@@ -7,6 +7,7 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import Link from 'next/link';
 import QuickAddProductModal from '@/components/QuickAddProductModal';
 import type { Product, Customer } from '@/lib/types';
+import { useSettings } from '@/hooks/use-queries';
 
 interface LineItem {
     product_id: number;
@@ -20,6 +21,7 @@ interface LineItem {
 
 export default function NewQuotePage() {
     const router = useRouter();
+    const { data: settings } = useSettings();
     const [products, setProducts] = useState<Product[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<Product[]>([]);
@@ -190,7 +192,7 @@ export default function NewQuotePage() {
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
-            currency: 'USD',
+            currency: settings?.currency || 'EUR',
         }).format(value);
     };
 
