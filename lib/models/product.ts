@@ -71,6 +71,7 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
 
   const result = await db.insert(products).values({
     user_id: userId,
+    product_type: input.product_type,
     sku: input.sku,
     name: input.name,
     description: input.description,
@@ -80,7 +81,7 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
 
   return {
     ...result[0],
-    product_type: result[0].product_type as "solution" | "oem_kit",
+    product_type: result[0].product_type as Product['product_type'],
     created_at: result[0].created_at?.toISOString() ?? new Date().toISOString(),
     updated_at: result[0].updated_at?.toISOString() ?? new Date().toISOString(),
     category_name: undefined,

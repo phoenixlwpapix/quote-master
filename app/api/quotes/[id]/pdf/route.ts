@@ -50,53 +50,43 @@ export async function GET(
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: #1a1a1a;
-      background: #ffffff;
-      line-height: 1.35;
-      font-size: 12px;
-      padding: 24px 28px;
-      max-width: 760px;
+      line-height: 1.55;
+      padding: 40px;
+      max-width: 800px;
       margin: 0 auto;
-    }
-    @page {
-      size: A4;
-      margin: 10mm 12mm;
     }
     .header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 24px;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
+      margin-bottom: 34px;
+      padding-bottom: 20px;
       border-bottom: 2px solid #10b981;
       break-inside: avoid;
       page-break-inside: avoid;
     }
     .logo {
-      font-size: 24px;
-      line-height: 1.1;
+      font-size: 28px;
       font-weight: bold;
       color: #10b981;
     }
     .logo-img {
-      height: 34px;
-      max-width: 230px;
+      height: 40px;
+      max-width: 260px;
       object-fit: contain;
     }
     .company-details {
-      font-size: 11px;
+      font-size: 12px;
       color: #666;
-      margin-top: 6px;
-      line-height: 1.35;
-      max-width: 360px;
+      margin-top: 8px;
+      line-height: 1.45;
+      max-width: 430px;
     }
     .quote-info {
       text-align: right;
-      min-width: 180px;
     }
     .quote-number {
-      font-size: 21px;
-      line-height: 1.15;
+      font-size: 24px;
       font-weight: bold;
       color: #1a1a1a;
     }
@@ -106,9 +96,9 @@ export async function GET(
     }
     .status {
       display: inline-block;
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 20px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 600;
       text-transform: uppercase;
       margin-top: 8px;
@@ -120,65 +110,39 @@ export async function GET(
     .status-expired { background: #fef3c7; color: #d97706; }
     
     .section {
-      margin-bottom: 14px;
-    }
-    .details-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 190px;
-      gap: 14px;
-      margin-bottom: 16px;
-      break-inside: avoid;
-      page-break-inside: avoid;
+      margin-bottom: 26px;
     }
     .section-title {
-      font-size: 11px;
+      font-size: 14px;
       font-weight: 600;
       color: #666;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin-bottom: 12px;
     }
     .customer-info {
       background: #f8fafc;
-      padding: 11px 12px;
-      border-radius: 6px;
+      padding: 20px;
+      border-radius: 8px;
       break-inside: avoid;
       page-break-inside: avoid;
     }
     .customer-name {
-      font-size: 15px;
-      line-height: 1.2;
+      font-size: 18px;
       font-weight: 600;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
     .customer-details {
       color: #666;
-      line-height: 1.35;
-    }
-    .quote-details {
-      background: #f8fafc;
-      border-radius: 6px;
-      padding: 11px 12px;
-      color: #555;
-    }
-    .quote-detail-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 2px 0;
-    }
-    .quote-detail-label {
-      color: #777;
     }
     
     .items-section {
-      margin-bottom: 12px;
+      margin-bottom: 22px;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 6px;
-      table-layout: fixed;
+      margin-top: 8px;
       break-inside: auto;
     }
     thead {
@@ -186,18 +150,14 @@ export async function GET(
     }
     th {
       text-align: left;
-      padding: 7px 9px;
+      padding: 12px 16px;
       background: #f1f5f9;
       font-weight: 600;
-      font-size: 10px;
+      font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       color: #64748b;
     }
-    th:nth-child(1) { width: 48%; }
-    th:nth-child(2) { width: 21%; }
-    th:nth-child(3) { width: 10%; }
-    th:nth-child(4) { width: 21%; }
     th:last-child, td:last-child {
       text-align: right;
     }
@@ -209,23 +169,21 @@ export async function GET(
       page-break-inside: avoid;
     }
     td {
-      padding: 8px 9px;
+      padding: 13px 16px;
       border-bottom: 1px solid #e2e8f0;
       vertical-align: top;
-      line-height: 1.28;
     }
     .product-name {
       font-weight: 500;
       overflow-wrap: anywhere;
     }
     .product-sku {
-      font-size: 10px;
+      font-size: 12px;
       color: #666;
-      margin-top: 2px;
     }
     
     .totals {
-      margin-top: 10px;
+      margin-top: 18px;
       text-align: right;
       break-inside: avoid;
       page-break-inside: avoid;
@@ -233,15 +191,15 @@ export async function GET(
     .totals-row {
       display: flex;
       justify-content: flex-end;
-      padding: 4px 0;
+      padding: 7px 0;
     }
     .totals-label {
-      width: 138px;
+      width: 150px;
       text-align: left;
       color: #666;
     }
     .totals-value {
-      width: 112px;
+      width: 120px;
       text-align: right;
       font-weight: 500;
     }
@@ -249,11 +207,11 @@ export async function GET(
       color: #dc2626;
     }
     .totals-row.total {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: bold;
       border-top: 2px solid #1a1a1a;
-      padding-top: 8px;
-      margin-top: 5px;
+      padding-top: 12px;
+      margin-top: 8px;
     }
     .totals-row.total .totals-value {
       color: #10b981;
@@ -261,50 +219,60 @@ export async function GET(
     
     .notes {
       background: #fef9c3;
-      padding: 10px 12px;
-      border-radius: 6px;
+      padding: 16px;
+      border-radius: 8px;
       border-left: 4px solid #eab308;
       break-inside: avoid;
       page-break-inside: avoid;
     }
     .notes-title {
       font-weight: 600;
-      margin-bottom: 5px;
+      margin-bottom: 8px;
     }
     
     .footer {
-      margin-top: 22px;
-      padding-top: 10px;
+      margin-top: 46px;
+      padding-top: 18px;
       border-top: 1px solid #e2e8f0;
       text-align: center;
       color: #666;
-      font-size: 10px;
-      line-height: 1.35;
+      font-size: 12px;
       break-inside: avoid;
       page-break-inside: avoid;
     }
     
     @media print {
-      html, body {
-        width: auto;
-        height: auto;
-        background: #ffffff;
+      @page {
+        size: A4;
+        margin: 0;
       }
       body {
         max-width: none;
-        padding: 0;
+        padding: 25px 40px;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
-      .header,
-      .details-grid,
-      .customer-info,
-      .quote-details,
-      .totals,
-      .notes,
+      .header {
+        margin-bottom: 25px;
+        page-break-after: avoid;
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .items-section {
+        margin-bottom: 16px;
+      }
+      td {
+        padding: 12px 16px;
+      }
+      .totals {
+        margin-top: 18px;
+      }
+      .totals-row {
+        padding: 6px 0;
+      }
       .footer {
-        break-inside: avoid;
-        page-break-inside: avoid;
+        margin-top: 38px;
       }
       thead {
         display: table-header-group;
@@ -336,41 +304,24 @@ export async function GET(
     </div>
   </div>
 
-  <div class="details-grid">
-    <div class="section">
-      <div class="section-title">Bill To</div>
-      <div class="customer-info">
-        <div class="customer-name">${quote.customer_name}</div>
-        <div class="customer-details">
-          ${quote.customer_email ? `<div>${quote.customer_email}</div>` : ''}
-          ${quote.customer_phone ? `<div>${quote.customer_phone}</div>` : ''}
-          ${quote.customer_address ? `<div>${quote.customer_address.replace(/\n/g, '<br>')}</div>` : ''}
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Quote Details</div>
-      <div class="quote-details">
-        <div class="quote-detail-row">
-          <span class="quote-detail-label">Issued</span>
-          <span>${formatDate(quote.created_at)}</span>
-        </div>
-        ${quote.valid_until ? `
-        <div class="quote-detail-row">
-          <span class="quote-detail-label">Valid Until</span>
-          <span>${formatDate(quote.valid_until)}</span>
-        </div>
-        ` : ''}
-        ${quote.delivery_weeks ? `
-        <div class="quote-detail-row">
-          <span class="quote-detail-label">Delivery</span>
-          <span>${quote.delivery_weeks} weeks</span>
-        </div>
-        ` : ''}
+  <div class="section">
+    <div class="section-title">Bill To</div>
+    <div class="customer-info">
+      <div class="customer-name">${quote.customer_name}</div>
+      <div class="customer-details">
+        ${quote.customer_email ? `<div>${quote.customer_email}</div>` : ''}
+        ${quote.customer_phone ? `<div>${quote.customer_phone}</div>` : ''}
+        ${quote.customer_address ? `<div>${quote.customer_address.replace(/\n/g, '<br>')}</div>` : ''}
       </div>
     </div>
   </div>
+
+  ${quote.valid_until ? `
+  <div class="section">
+    <div class="section-title">Valid Until</div>
+    <div>${formatDate(quote.valid_until)}</div>
+  </div>
+  ` : ''}
 
   <div class="section items-section">
     <div class="section-title">Items</div>

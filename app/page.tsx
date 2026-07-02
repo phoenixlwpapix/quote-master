@@ -324,8 +324,8 @@ export default function DashboardPage() {
 
       {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <OrderRevenuePie orders={orders} currency={currency} />
         <QuoteConversionChart quotes={quotes} />
+        <OrderRevenuePie orders={orders} currency={currency} />
       </div>
 
       {/* Recent Activity */}

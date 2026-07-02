@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Trash2, Search, ArrowLeft, User, GripVertical } from 'lucide-react';
+import { Trash2, Search, ArrowLeft, User, GripVertical } from 'lucide-react';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import Link from 'next/link';
 import QuickAddProductModal from '@/components/QuickAddProductModal';
+import ProductCatalogPicker from '@/components/ProductCatalogPicker';
 import type { Product, Customer } from '@/lib/types';
 import { useSettings } from '@/hooks/use-queries';
 
@@ -23,9 +24,6 @@ export default function NewQuotePage() {
     const router = useRouter();
     const { data: settings } = useSettings();
     const [products, setProducts] = useState<Product[]>([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchResults, setSearchResults] = useState<Product[]>([]);
-    const [showSearch, setShowSearch] = useState(false);
     const [loading, setLoading] = useState(false);
 
     // Customer search state
@@ -91,20 +89,6 @@ export default function NewQuotePage() {
         setShowQuickAdd(false);
     };
 
-    const handleSearch = useCallback((term: string) => {
-        setSearchTerm(term);
-        if (term.length < 2) {
-            setSearchResults([]);
-            return;
-        }
-
-        const results = products.filter(p =>
-            p.name.toLowerCase().includes(term.toLowerCase()) ||
-            p.sku.toLowerCase().includes(term.toLowerCase())
-        );
-        setSearchResults(results);
-    }, [products]);
-
     const handleCustomerSearch = useCallback((term: string) => {
         setCustomerSearchTerm(term);
         if (term.length < 1) {
@@ -151,9 +135,6 @@ export default function NewQuotePage() {
             }]);
         }
 
-        setSearchTerm('');
-        setSearchResults([]);
-        setShowSearch(false);
     };
 
     const updateQuantity = (productId: number, quantity: number) => {
@@ -432,101 +413,13 @@ export default function NewQuotePage() {
                 <div className="card">
                     <h2 className="text-lg font-semibold text-white mb-4">Line Items</h2>
 
-                    {/* Product Catalog */}
-                    <div className="mb-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700/50">
-                        <div className="flex items-center justify-between mb-3">
-                            <label className="block text-sm font-medium text-brand-400">
-                                <Plus size={14} className="inline mr-1.5" />
-                                Add Products from Catalog
-                            </label>
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs text-slate-500">{products.length} products available</span>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowQuickAdd(true)}
-                                    className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-slate-700 hover:bg-brand-600 text-slate-300 hover:text-white transition-colors"
-                                >
-                                    <Plus size={12} />
-                                    New Product
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Search Filter */}
-                        <div className="relative mb-4">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => handleSearch(e.target.value)}
-                                placeholder="Filter products by name or SKU..."
-                                className="w-full pl-11 pr-4 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 text-sm"
-                                style={{ paddingLeft: '2.75rem' }}
-                            />
-                        </div>
-
-                        {/* Product Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-                            {(searchTerm.length >= 2 ? searchResults : products).map((product) => {
-                                const isAdded = lineItems.some(item => item.product_id === product.id);
-                                const currentQty = lineItems.find(item => item.product_id === product.id)?.quantity || 0;
-
-                                return (
-                                    <div
-                                        key={product.id}
-                                        className={`relative p-3 rounded-lg border transition-all ${isAdded
-                                            ? 'bg-brand-900/30 border-brand-600/50'
-                                            : 'bg-slate-900/50 border-slate-700/50 hover:border-slate-600'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div className="flex-1 min-w-0 pr-2">
-                                                <p className="text-white font-medium text-sm truncate">{product.name}</p>
-                                                <p className="text-xs text-slate-500">{product.sku}</p>
-                                            </div>
-                                            <span className="text-brand-400 font-semibold text-sm whitespace-nowrap">
-                                                {formatCurrency(product.unit_price)}
-                                            </span>
-                                        </div>
-
-                                        {isAdded ? (
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs text-brand-400">Added ({currentQty}x)</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => addLineItem(product)}
-                                                    className="px-2 py-1 text-xs bg-brand-600 hover:bg-brand-500 text-white rounded transition-colors"
-                                                >
-                                                    + Add More
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => addLineItem(product)}
-                                                className="w-full py-1.5 text-xs bg-slate-700 hover:bg-brand-600 text-white rounded transition-colors flex items-center justify-center gap-1"
-                                            >
-                                                <Plus size={14} />
-                                                Add to Quote
-                                            </button>
-                                        )}
-                                    </div>
-                                );
-                            })}
-
-                            {searchTerm.length >= 2 && searchResults.length === 0 && (
-                                <div className="col-span-full text-center py-4 text-slate-400 text-sm">
-                                    No products match &quot;{searchTerm}&quot;
-                                </div>
-                            )}
-
-                            {products.length === 0 && (
-                                <div className="col-span-full text-center py-4 text-slate-400 text-sm">
-                                    No products available. Add products in the Products page.
-                                </div>
-                            )}
-                        </div>
-                    </div>
+                    <ProductCatalogPicker
+                        products={products}
+                        selectedItems={lineItems}
+                        onAddProduct={addLineItem}
+                        onQuickAddProduct={() => setShowQuickAdd(true)}
+                        formatCurrency={formatCurrency}
+                    />
 
                     {/* Line Items Table */}
                     {lineItems.length === 0 ? (
