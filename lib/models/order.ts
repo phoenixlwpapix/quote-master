@@ -94,15 +94,38 @@ export async function getOrderByNumber(orderNumber: string): Promise<Order | und
     return order;
 }
 
+async function getOrderByQuoteId(quoteId: number, userId: string): Promise<Order | undefined> {
+    const result = await db.select({ id: orders.id })
+        .from(orders)
+        .where(and(eq(orders.quote_id, quoteId), eq(orders.user_id, userId)))
+        .limit(1);
+
+    if (result.length === 0) return undefined;
+    return getOrderById(result[0].id);
+}
+
 export async function convertQuoteToOrder(quoteId: number): Promise<Order | undefined> {
     const userId = await requireUserId();
     const quote = await getQuoteById(quoteId);
 
     if (!quote || !quote.items) return undefined;
+    if (quote.status !== 'approved') {
+        throw new Error('Can only convert an approved quote to an order');
+    }
+
+    const existingOrder = await getOrderByQuoteId(quoteId, userId);
+    if (existingOrder) return existingOrder;
 
     const orderNumber = await generateOrderNumber(userId);
 
     const result = await db.transaction(async (tx) => {
+        const [existing] = await tx.select({ id: orders.id })
+            .from(orders)
+            .where(and(eq(orders.quote_id, quoteId), eq(orders.user_id, userId)))
+            .limit(1);
+
+        if (existing) return existing;
+
         const [insertedOrder] = await tx.insert(orders).values({
             user_id: userId,
             order_number: orderNumber,
@@ -118,6 +141,7 @@ export async function convertQuoteToOrder(quoteId: number): Promise<Order | unde
             incoterm: quote.incoterm,
             delivery_weeks: quote.delivery_weeks,
             total: quote.total,
+            issue_date: quote.issue_date,
             notes: quote.notes,
             status: 'pending',
         }).returning();
@@ -140,7 +164,7 @@ export async function convertQuoteToOrder(quoteId: number): Promise<Order | unde
         await tx.update(quotes).set({
             status: 'approved',
             updated_at: new Date(),
-        }).where(eq(quotes.id, quoteId));
+        }).where(and(eq(quotes.id, quoteId), eq(quotes.user_id, userId)));
 
         return insertedOrder;
     });

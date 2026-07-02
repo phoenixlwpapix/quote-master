@@ -251,7 +251,7 @@ function QuoteConversionChart({ quotes }: { quotes: Quote[] }) {
 // ─── Dashboard Page ────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { data: products = [], isLoading: productsLoading, isFetching: productsFetching, refetch: refetchProducts } = useProducts();
+  const { isLoading: productsLoading, isFetching: productsFetching, refetch: refetchProducts } = useProducts();
   const { data: quotes = [], isLoading: quotesLoading, isFetching: quotesFetching, refetch: refetchQuotes } = useQuotes();
   const { data: orders = [], isLoading: ordersLoading, isFetching: ordersFetching, refetch: refetchOrders } = useOrders();
   const { data: settings } = useSettings();

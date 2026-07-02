@@ -1,43 +1,38 @@
 import { NextResponse } from 'next/server';
 import { getCompanySettings, updateCompanySettings } from '@/lib/models/settings';
+import { handleApiError, optionalString, requiredString } from '@/lib/route-helpers';
 
 export async function GET() {
     try {
         const settings = await getCompanySettings();
         return NextResponse.json(settings);
     } catch (error) {
-        console.error('Error fetching settings:', error);
-        return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
+        return handleApiError(error, 'Failed to fetch settings');
     }
 }
 
 export async function PUT(request: Request) {
     try {
-        const body = await request.json();
+        const body: Record<string, unknown> = await request.json();
         const supportedCurrencies = new Set(['EUR', 'USD', 'CNY']);
         const currency = typeof body.currency === 'string' && supportedCurrencies.has(body.currency)
             ? body.currency
             : 'EUR';
 
-        if (!body.company_name?.trim()) {
-            return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
-        }
-
         const settings = await updateCompanySettings({
-            company_name: body.company_name,
-            company_email: body.company_email || null,
-            company_phone: body.company_phone || null,
-            company_address: body.company_address || null,
-            company_website: body.company_website || null,
-            tax_id: body.tax_id || null,
-            logo_url: body.logo_url || null,
-            footer_text: body.footer_text || null,
+            company_name: requiredString(body.company_name, 'Company name'),
+            company_email: optionalString(body.company_email),
+            company_phone: optionalString(body.company_phone),
+            company_address: optionalString(body.company_address),
+            company_website: optionalString(body.company_website),
+            tax_id: optionalString(body.tax_id),
+            logo_url: optionalString(body.logo_url),
+            footer_text: optionalString(body.footer_text),
             currency,
         });
 
         return NextResponse.json(settings);
     } catch (error) {
-        console.error('Error updating settings:', error);
-        return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 });
+        return handleApiError(error, 'Failed to update settings');
     }
 }

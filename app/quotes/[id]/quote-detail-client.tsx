@@ -25,9 +25,11 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [convertModalOpen, setConvertModalOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const handleStatusUpdate = async () => {
         if (newStatus === quote.status) return;
+        setErrorMessage(null);
 
         try {
             const res = await fetch(`/api/quotes/${quote.id}`, {
@@ -40,14 +42,19 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                 const updated = await res.json();
                 setQuote(updated);
                 setIsStatusModalOpen(false);
+            } else {
+                const error: { error?: string } = await res.json();
+                setErrorMessage(error.error || 'Failed to update quote status');
             }
         } catch (error) {
             console.error('Error updating status:', error);
+            setErrorMessage('Failed to update quote status');
         }
     };
 
     const handleConvertToOrder = async () => {
         setConverting(true);
+        setErrorMessage(null);
         try {
             const res = await fetch(`/api/quotes/${quote.id}/convert`, {
                 method: 'POST',
@@ -57,12 +64,12 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                 const order = await res.json();
                 router.push(`/orders/${order.id}`);
             } else {
-                const error = await res.json();
-                alert(error.error || 'Failed to convert quote');
+                const error: { error?: string } = await res.json();
+                setErrorMessage(error.error || 'Failed to convert quote');
             }
         } catch (error) {
             console.error('Error converting quote:', error);
-            alert('Failed to convert quote');
+            setErrorMessage('Failed to convert quote');
         } finally {
             setConverting(false);
             setConvertModalOpen(false);
@@ -182,6 +189,12 @@ export default function QuoteDetailClient({ quote: initialQuote }: QuoteDetailCl
                     </div>
                 </div>
             </div>
+
+            {errorMessage && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {errorMessage}
+                </div>
+            )}
 
             {/* Progress Bar */}
             <div className="card">

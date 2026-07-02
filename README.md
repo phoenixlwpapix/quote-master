@@ -14,6 +14,9 @@ A modern, multi-tenant quote and order management SaaS built with Next.js 16. Qu
 - ⚙️ **Settings** - Configure company information, quote templates, and preferred currency (EUR, USD, CNY)
 - 💱 **Dynamic Currency Display** - Product prices, quotes, orders, dashboards, and PDFs follow the selected company currency
 - 🔒 **Multi-tenancy** - Each user only sees their own data
+- 🧱 **Hardened Data Integrity** - Per-user uniqueness for SKUs, quote numbers, order numbers, and company settings
+- ✅ **Safe Quote Conversion** - Quote-to-order conversion is idempotent, preventing duplicate orders from retries or double-clicks
+- 🛡️ **Validated API Inputs** - API routes return clear 400/401/404/409 errors for invalid input, unauthenticated access, missing records, and duplicates
 - ⚡ **Optimized Performance** - Client-side caching with React Query for instant navigation
 
 ## Tech Stack
@@ -128,7 +131,17 @@ quote-master/
 
 - Each database record includes a `user_id` column
 - All queries filter by the current user's ID
+- Product series categories are user-scoped for new edits, while legacy global categories remain read-only visible
 - Quote/Order numbers are unique per-user (e.g., each user starts from Q-2026-0001)
+- Database unique indexes protect per-user SKU, quote number, order number, quote conversion, and settings records
+- Contact creation verifies that the target customer belongs to the current user
+
+### API Safety
+
+- Mutating API routes validate request payloads before writing to the database
+- Direct unauthenticated API calls return `401` instead of leaking as generic server errors
+- PDF HTML output escapes stored customer/company/note content before rendering
+- Quote conversion returns the existing order when a quote was already converted
 
 ### Caching Strategy
 

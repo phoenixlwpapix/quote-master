@@ -1,5 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllProducts, createProduct, searchProducts } from '@/lib/models/product';
+import { handleApiError, integerFrom, numberFrom, optionalString, requiredString } from '@/lib/route-helpers';
+import type { ProductType } from '@/lib/types';
+
+const PRODUCT_TYPES: ProductType[] = ['solution', 'oem_kit', 'accessories', 'software'];
+
+function productTypeFrom(value: unknown): ProductType {
+    return typeof value === 'string' && PRODUCT_TYPES.includes(value as ProductType)
+        ? value as ProductType
+        : 'solution';
+}
 
 export async function GET(request: NextRequest) {
     try {
@@ -11,45 +21,31 @@ export async function GET(request: NextRequest) {
         if (search) {
             products = await searchProducts(search);
         } else if (categoryId) {
-            products = await getAllProducts(parseInt(categoryId, 10));
+            products = await getAllProducts(integerFrom(categoryId, 'Category ID', { min: 1 }));
         } else {
             products = await getAllProducts();
         }
 
         return NextResponse.json(products);
     } catch (error) {
-        console.error('Error fetching products:', error);
-        return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });
+        return handleApiError(error, 'Failed to fetch products');
     }
 }
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-
-        if (!body.sku || !body.name || body.unit_price === undefined) {
-            return NextResponse.json(
-                { error: 'SKU, name, and unit_price are required' },
-                { status: 400 }
-            );
-        }
-
-        const validTypes = ['solution', 'oem_kit', 'accessories', 'software'];
+        const body: Record<string, unknown> = await request.json();
         const product = await createProduct({
-            product_type: validTypes.includes(body.product_type) ? body.product_type : 'solution',
-            sku: body.sku.trim(),
-            name: body.name.trim(),
-            description: body.description?.trim() || null,
-            unit_price: parseFloat(body.unit_price),
-            category_id: body.category_id ? parseInt(body.category_id, 10) : null,
+            product_type: productTypeFrom(body.product_type),
+            sku: requiredString(body.sku, 'SKU'),
+            name: requiredString(body.name, 'Name'),
+            description: optionalString(body.description),
+            unit_price: numberFrom(body.unit_price, 'Unit price', { min: 0 }),
+            category_id: body.category_id ? integerFrom(body.category_id, 'Category ID', { min: 1 }) : null,
         });
 
         return NextResponse.json(product, { status: 201 });
     } catch (error) {
-        console.error('Error creating product:', error);
-        if ((error as Error).message?.includes('UNIQUE constraint failed')) {
-            return NextResponse.json({ error: 'SKU already exists' }, { status: 409 });
-        }
-        return NextResponse.json({ error: 'Failed to create product' }, { status: 500 });
+        return handleApiError(error, 'Failed to create product');
     }
 }

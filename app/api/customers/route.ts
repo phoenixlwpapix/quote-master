@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllCustomers, createCustomer, searchCustomers } from '@/lib/models/customer';
+import { handleApiError, optionalString, requiredString } from '@/lib/route-helpers';
 
 export async function GET(request: NextRequest) {
     try {
@@ -9,30 +10,24 @@ export async function GET(request: NextRequest) {
         const customers = search ? await searchCustomers(search) : await getAllCustomers();
         return NextResponse.json(customers);
     } catch (error) {
-        console.error('Error fetching customers:', error);
-        return NextResponse.json({ error: 'Failed to fetch customers' }, { status: 500 });
+        return handleApiError(error, 'Failed to fetch customers');
     }
 }
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json();
-
-        if (!body.name || typeof body.name !== 'string') {
-            return NextResponse.json({ error: 'Company name is required' }, { status: 400 });
-        }
+        const body: Record<string, unknown> = await request.json();
 
         const customer = await createCustomer({
-            name: body.name.trim(),
-            address: body.address?.trim() || null,
-            website: body.website?.trim() || null,
-            industry: body.industry?.trim() || null,
-            notes: body.notes?.trim() || null,
+            name: requiredString(body.name, 'Company name'),
+            address: optionalString(body.address),
+            website: optionalString(body.website),
+            industry: optionalString(body.industry),
+            notes: optionalString(body.notes),
         });
 
         return NextResponse.json(customer, { status: 201 });
     } catch (error) {
-        console.error('Error creating customer:', error);
-        return NextResponse.json({ error: 'Failed to create customer' }, { status: 500 });
+        return handleApiError(error, 'Failed to create customer');
     }
 }

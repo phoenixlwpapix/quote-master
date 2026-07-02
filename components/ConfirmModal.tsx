@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
 
@@ -49,13 +49,8 @@ export default function ConfirmModal({
     loading = false,
 }: ConfirmModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
-    const [mounted, setMounted] = useState(false);
     const styles = variantStyles[variant];
     const Icon = styles.icon;
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -73,7 +68,7 @@ export default function ConfirmModal({
         };
     }, [isOpen, onClose, loading]);
 
-    if (!isOpen || !mounted) return null;
+    if (!isOpen || typeof document === 'undefined') return null;
 
     const modalContent = (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

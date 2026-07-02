@@ -9,7 +9,7 @@ import Modal from '@/components/Modal';
 import ConfirmModal from '@/components/ConfirmModal';
 import { PageSkeleton } from '@/components/Skeleton';
 import { useProducts, useCategories, useCreateProduct, useUpdateProduct, useDeleteProduct, useSettings } from '@/hooks/use-queries';
-import type { Product, Category, ProductType } from '@/lib/types';
+import type { Product, ProductType } from '@/lib/types';
 
 const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
     solution: 'Solution',

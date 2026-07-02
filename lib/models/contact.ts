@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { db } from '../db';
-import { contacts } from '../schema';
+import { contacts, customers } from '../schema';
 import { eq, asc, desc, and } from 'drizzle-orm';
 import type { Contact, CreateContactInput, UpdateContactInput } from '../types';
 import { requireUserId } from '../auth/get-user';
@@ -27,6 +27,14 @@ export async function getContactsByCustomerId(customerId: number): Promise<Conta
 
 export async function createContact(customerId: number, input: CreateContactInput): Promise<Contact> {
     const userId = await requireUserId();
+    const [customer] = await db.select({ id: customers.id })
+        .from(customers)
+        .where(and(eq(customers.id, customerId), eq(customers.user_id, userId)))
+        .limit(1);
+
+    if (!customer) {
+        throw new Error('Customer not found');
+    }
 
     const result = await db.insert(contacts).values({
         customer_id: customerId,

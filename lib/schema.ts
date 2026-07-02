@@ -1,4 +1,4 @@
-import { pgTable, serial, text, integer, doublePrecision, timestamp, boolean, pgSchema } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, integer, doublePrecision, timestamp, boolean, pgSchema, uniqueIndex } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 // Neon Auth schema - managed by Neon (read-only reference)
@@ -53,9 +53,12 @@ export const verifications = neonAuth.table("verification", {
 // Application tables with user_id for data isolation (no FK constraint to avoid type issues)
 export const categories = pgTable('categories', {
     id: serial('id').primaryKey(),
-    name: text('name').notNull().unique(),
+    user_id: text('user_id'),
+    name: text('name').notNull(),
     created_at: timestamp('created_at').defaultNow(),
-});
+}, (table) => ({
+    userNameUnique: uniqueIndex('categories_user_name_unique').on(table.user_id, table.name),
+}));
 
 export const customers = pgTable('customers', {
     id: serial('id').primaryKey(),
@@ -94,7 +97,9 @@ export const products = pgTable('products', {
     category_id: integer('category_id').references(() => categories.id),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+    userSkuUnique: uniqueIndex('products_user_sku_unique').on(table.user_id, table.sku),
+}));
 
 export const quotes = pgTable('quotes', {
     id: serial('id').primaryKey(),
@@ -117,7 +122,9 @@ export const quotes = pgTable('quotes', {
     status: text('status').default('draft'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+    userQuoteNumberUnique: uniqueIndex('quotes_user_quote_number_unique').on(table.user_id, table.quote_number),
+}));
 
 export const quoteItems = pgTable('quote_items', {
     id: serial('id').primaryKey(),
@@ -151,7 +158,10 @@ export const orders = pgTable('orders', {
     status: text('status').default('pending'),
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+    userOrderNumberUnique: uniqueIndex('orders_user_order_number_unique').on(table.user_id, table.order_number),
+    userQuoteUnique: uniqueIndex('orders_user_quote_unique').on(table.user_id, table.quote_id),
+}));
 
 export const orderItems = pgTable('order_items', {
     id: serial('id').primaryKey(),
@@ -177,7 +187,9 @@ export const companySettings = pgTable('company_settings', {
     footer_text: text('footer_text').default('Thank you for your business!'),
     currency: text('currency').default('EUR').notNull(),
     updated_at: timestamp('updated_at').defaultNow(),
-});
+}, (table) => ({
+    userUnique: uniqueIndex('company_settings_user_unique').on(table.user_id),
+}));
 
 // Relations (app tables only)
 export const customersRelations = relations(customers, ({ many }) => ({

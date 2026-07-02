@@ -1,4 +1,4 @@
-import { Check, X, Clock, Package, Truck, CheckCircle } from 'lucide-react';
+import { Check, X, Clock, Truck, CheckCircle } from 'lucide-react';
 
 interface OrderProgressBarProps {
     status: string;

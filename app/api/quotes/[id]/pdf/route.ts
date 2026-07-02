@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getQuoteById } from '@/lib/models/quote';
 import { getCompanySettings } from '@/lib/models/settings';
+import { handleApiError, integerFrom } from '@/lib/route-helpers';
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function escapeLines(value: string): string {
+  return escapeHtml(value).replace(/\n/g, '<br>');
+}
 
 export async function GET(
   request: NextRequest,
@@ -8,8 +22,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const quote = await getQuoteById(parseInt(id, 10));
-    const companySettings = await getCompanySettings();
+    const quoteId = integerFrom(id, 'Quote ID', { min: 1 });
+    const [quote, companySettings] = await Promise.all([
+      getQuoteById(quoteId),
+      getCompanySettings(),
+    ]);
 
     if (!quote) {
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
@@ -288,30 +305,30 @@ export async function GET(
   <div class="header">
     <div>
       ${companySettings.logo_url
-        ? `<img src="${companySettings.logo_url}" alt="${companySettings.company_name}" class="logo-img">`
-        : `<div class="logo">${companySettings.company_name}</div>`
+        ? `<img src="${escapeHtml(companySettings.logo_url)}" alt="${escapeHtml(companySettings.company_name)}" class="logo-img">`
+        : `<div class="logo">${escapeHtml(companySettings.company_name)}</div>`
       }
       <div class="company-details">
-        ${companySettings.company_email ? `<div>${companySettings.company_email}</div>` : ''}
-        ${companySettings.company_phone ? `<div>${companySettings.company_phone}</div>` : ''}
-        ${companySettings.company_address ? `<div>${companySettings.company_address.replace(/\n/g, ', ')}</div>` : ''}
+        ${companySettings.company_email ? `<div>${escapeHtml(companySettings.company_email)}</div>` : ''}
+        ${companySettings.company_phone ? `<div>${escapeHtml(companySettings.company_phone)}</div>` : ''}
+        ${companySettings.company_address ? `<div>${escapeHtml(companySettings.company_address.replace(/\n/g, ', '))}</div>` : ''}
       </div>
     </div>
     <div class="quote-info">
-      <div class="quote-number">${quote.quote_number}</div>
+      <div class="quote-number">${escapeHtml(quote.quote_number)}</div>
       <div class="quote-date">${formatDate(quote.created_at)}</div>
-      <div class="status status-${quote.status}">${quote.status}</div>
+      <div class="status status-${escapeHtml(quote.status)}">${escapeHtml(quote.status)}</div>
     </div>
   </div>
 
   <div class="section">
     <div class="section-title">Bill To</div>
     <div class="customer-info">
-      <div class="customer-name">${quote.customer_name}</div>
+      <div class="customer-name">${escapeHtml(quote.customer_name)}</div>
       <div class="customer-details">
-        ${quote.customer_email ? `<div>${quote.customer_email}</div>` : ''}
-        ${quote.customer_phone ? `<div>${quote.customer_phone}</div>` : ''}
-        ${quote.customer_address ? `<div>${quote.customer_address.replace(/\n/g, '<br>')}</div>` : ''}
+        ${quote.customer_email ? `<div>${escapeHtml(quote.customer_email)}</div>` : ''}
+        ${quote.customer_phone ? `<div>${escapeHtml(quote.customer_phone)}</div>` : ''}
+        ${quote.customer_address ? `<div>${escapeLines(quote.customer_address)}</div>` : ''}
       </div>
     </div>
   </div>
@@ -338,8 +355,8 @@ export async function GET(
         ${quote.items?.map(item => `
         <tr>
           <td>
-            <div class="product-name">${item.product_name}</div>
-            <div class="product-sku">${item.product_sku}</div>
+            <div class="product-name">${escapeHtml(item.product_name)}</div>
+            <div class="product-sku">${escapeHtml(item.product_sku)}</div>
           </td>
           <td>${formatCurrency(item.unit_price)}</td>
           <td>${item.quantity}</td>
@@ -362,7 +379,7 @@ export async function GET(
       ` : ''}
       ${quote.shipping_fee > 0 ? `
       <div class="totals-row" style="color:#2563eb;">
-        <div class="totals-label">Shipping Fee${quote.incoterm ? ` (${quote.incoterm})` : ''}</div>
+        <div class="totals-label">Shipping Fee${quote.incoterm ? ` (${escapeHtml(quote.incoterm)})` : ''}</div>
         <div class="totals-value">+${formatCurrency(quote.shipping_fee)}</div>
       </div>
       ` : ''}
@@ -377,15 +394,15 @@ export async function GET(
   <div class="section">
     <div class="notes">
       <div class="notes-title">Notes</div>
-      <div>${quote.notes.replace(/\n/g, '<br>')}</div>
+      <div>${escapeLines(quote.notes)}</div>
     </div>
   </div>
   ` : ''}
 
   <div class="footer">
-    <p>${companySettings.footer_text || 'Thank you for your business!'}</p>
-    ${companySettings.company_website ? `<p>${companySettings.company_website}</p>` : ''}
-    ${companySettings.tax_id ? `<p>Tax ID: ${companySettings.tax_id}</p>` : ''}
+    <p>${escapeHtml(companySettings.footer_text || 'Thank you for your business!')}</p>
+    ${companySettings.company_website ? `<p>${escapeHtml(companySettings.company_website)}</p>` : ''}
+    ${companySettings.tax_id ? `<p>Tax ID: ${escapeHtml(companySettings.tax_id)}</p>` : ''}
   </div>
 </body>
 </html>
@@ -397,7 +414,6 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error generating PDF:', error);
-    return NextResponse.json({ error: 'Failed to generate PDF' }, { status: 500 });
+    return handleApiError(error, 'Failed to generate PDF');
   }
 }

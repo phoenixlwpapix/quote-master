@@ -3,10 +3,9 @@ import { useState, useCallback, DragEvent } from 'react';
 interface UseDragAndDropOptions<T> {
     items: T[];
     onReorder: (items: T[]) => void;
-    getItemId: (item: T) => string | number;
 }
 
-export function useDragAndDrop<T>({ items, onReorder, getItemId }: UseDragAndDropOptions<T>) {
+export function useDragAndDrop<T>({ items, onReorder }: UseDragAndDropOptions<T>) {
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 

@@ -25,6 +25,7 @@ export default function NewQuotePage() {
     const { data: settings } = useSettings();
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Customer search state
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -55,7 +56,6 @@ export default function NewQuotePage() {
     const { getDragProps, getRowClassName } = useDragAndDrop({
         items: lineItems,
         onReorder: setLineItems,
-        getItemId: (item) => item.product_id,
     });
 
     useEffect(() => {
@@ -179,9 +179,10 @@ export default function NewQuotePage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMessage(null);
 
         if (lineItems.length === 0) {
-            alert('Please add at least one product to the quote.');
+            setErrorMessage('Please add at least one product to the quote.');
             return;
         }
 
@@ -208,12 +209,12 @@ export default function NewQuotePage() {
                 const quote = await res.json();
                 router.push(`/quotes/${quote.id}`);
             } else {
-                const error = await res.json();
-                alert(error.error || 'Failed to create quote');
+                const error: { error?: string } = await res.json();
+                setErrorMessage(error.error || 'Failed to create quote');
             }
         } catch (error) {
             console.error('Error creating quote:', error);
-            alert('Failed to create quote');
+            setErrorMessage('Failed to create quote');
         } finally {
             setLoading(false);
         }
@@ -234,6 +235,12 @@ export default function NewQuotePage() {
                     <p className="text-slate-400 mt-1">Create a new quote for a customer</p>
                 </div>
             </div>
+
+            {errorMessage && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {errorMessage}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Customer Information */}
@@ -424,7 +431,7 @@ export default function NewQuotePage() {
                     {/* Line Items Table */}
                     {lineItems.length === 0 ? (
                         <div className="text-center py-8 text-slate-400">
-                            No items added yet. Click "Add Product" to start.
+                            No items added yet. Click &quot;Add Product&quot; to start.
                         </div>
                     ) : (
                         <div className="overflow-x-auto">

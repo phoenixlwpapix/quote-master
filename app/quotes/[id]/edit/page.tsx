@@ -7,7 +7,7 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import Link from 'next/link';
 import QuickAddProductModal from '@/components/QuickAddProductModal';
 import ProductCatalogPicker from '@/components/ProductCatalogPicker';
-import type { Product, Customer } from '@/lib/types';
+import type { Product, Customer, Quote } from '@/lib/types';
 import { useSettings } from '@/hooks/use-queries';
 
 interface LineItem {
@@ -27,6 +27,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(false);
     const [fetchingQuote, setFetchingQuote] = useState(true);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     // Customer search state
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -56,31 +57,17 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
     const { getDragProps, getRowClassName } = useDragAndDrop({
         items: lineItems,
         onReorder: setLineItems,
-        getItemId: (item) => item.product_id,
     });
 
-    useEffect(() => {
-        const init = async () => {
-            try {
-                await Promise.all([fetchProducts(), fetchCustomers(), fetchQuote()]);
-            } catch (error) {
-                console.error('Error initializing page:', error);
-            } finally {
-                setFetchingQuote(false);
-            }
-        };
-        init();
-    }, [id]);
-
-    const fetchQuote = async () => {
+    const fetchQuote = useCallback(async () => {
         try {
             const res = await fetch(`/api/quotes/${id}`);
             if (res.ok) {
-                const data = await res.json();
+                const data: Quote = await res.json();
 
                 // If quote is not draft, redirect
                 if (data.status !== 'draft') {
-                    alert('Only draft quotes can be edited');
+                    setErrorMessage('Only draft quotes can be edited');
                     router.push(`/quotes/${id}`);
                     return;
                 }
@@ -100,8 +87,8 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                 setDeliveryWeeks(data.delivery_weeks != null ? String(data.delivery_weeks) : '');
 
                 if (data.items) {
-                    setLineItems(data.items.map((item: any) => ({
-                        product_id: item.product_id,
+                    setLineItems(data.items.map((item) => ({
+                        product_id: item.product_id ?? 0,
                         product_name: item.product_name,
                         product_sku: item.product_sku,
                         unit_price: item.unit_price,
@@ -118,27 +105,40 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
             console.error('Error fetching quote:', error);
             router.push('/quotes');
         }
-    };
+    }, [id, router]);
 
-    const fetchCustomers = async () => {
+    const fetchCustomers = useCallback(async () => {
         try {
             const res = await fetch('/api/customers');
-            const data = await res.json();
+            const data: Customer[] = await res.json();
             setCustomers(data);
         } catch (error) {
             console.error('Error fetching customers:', error);
         }
-    };
+    }, []);
 
-    const fetchProducts = async () => {
+    const fetchProducts = useCallback(async () => {
         try {
             const res = await fetch('/api/products');
-            const data = await res.json();
+            const data: Product[] = await res.json();
             setProducts(data);
         } catch (error) {
             console.error('Error fetching products:', error);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        const init = async () => {
+            try {
+                await Promise.all([fetchProducts(), fetchCustomers(), fetchQuote()]);
+            } catch (error) {
+                console.error('Error initializing page:', error);
+            } finally {
+                setFetchingQuote(false);
+            }
+        };
+        void init();
+    }, [fetchProducts, fetchCustomers, fetchQuote]);
 
     const handleProductCreated = (product: Product) => {
         setProducts((prev) => [...prev, product]);
@@ -236,9 +236,10 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setErrorMessage(null);
 
         if (lineItems.length === 0) {
-            alert('Please add at least one product to the quote.');
+            setErrorMessage('Please add at least one product to the quote.');
             return;
         }
 
@@ -264,12 +265,12 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
             if (res.ok) {
                 router.push(`/quotes/${id}`);
             } else {
-                const error = await res.json();
-                alert(error.error || 'Failed to update quote');
+                const error: { error?: string } = await res.json();
+                setErrorMessage(error.error || 'Failed to update quote');
             }
         } catch (error) {
             console.error('Error updating quote:', error);
-            alert('Failed to update quote');
+            setErrorMessage('Failed to update quote');
         } finally {
             setLoading(false);
         }
@@ -298,6 +299,12 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                     <p className="text-slate-400 mt-1">Update quote details</p>
                 </div>
             </div>
+
+            {errorMessage && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {errorMessage}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Customer Information */}
@@ -488,7 +495,7 @@ export default function EditQuotePage({ params }: { params: Promise<{ id: string
                     {/* Line Items Table */}
                     {lineItems.length === 0 ? (
                         <div className="text-center py-8 text-slate-400">
-                            No items added yet. Click "Add Product" to start.
+                            No items added yet. Click &quot;Add Product&quot; to start.
                         </div>
                     ) : (
                         <div className="overflow-x-auto">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { updateContact, deleteContact } from '@/lib/models/contact';
+import { handleApiError, integerFrom, optionalString, requiredString } from '@/lib/route-helpers';
 
 export async function PUT(
     request: NextRequest,
@@ -7,15 +8,15 @@ export async function PUT(
 ) {
     try {
         const { contactId } = await params;
-        const body = await request.json();
+        const body: Record<string, unknown> = await request.json();
 
-        const contact = await updateContact(parseInt(contactId, 10), {
-            name: body.name?.trim(),
-            title: body.title?.trim() || null,
-            email: body.email?.trim() || null,
-            phone: body.phone?.trim() || null,
-            is_primary: body.is_primary,
-            notes: body.notes?.trim() || null,
+        const contact = await updateContact(integerFrom(contactId, 'Contact ID', { min: 1 }), {
+            name: body.name !== undefined ? requiredString(body.name, 'Contact name') : undefined,
+            title: optionalString(body.title),
+            email: optionalString(body.email),
+            phone: optionalString(body.phone),
+            is_primary: typeof body.is_primary === 'boolean' ? body.is_primary : undefined,
+            notes: optionalString(body.notes),
         });
 
         if (!contact) {
@@ -24,8 +25,7 @@ export async function PUT(
 
         return NextResponse.json(contact);
     } catch (error) {
-        console.error('Error updating contact:', error);
-        return NextResponse.json({ error: 'Failed to update contact' }, { status: 500 });
+        return handleApiError(error, 'Failed to update contact');
     }
 }
 
@@ -35,7 +35,7 @@ export async function DELETE(
 ) {
     try {
         const { contactId } = await params;
-        const deleted = await deleteContact(parseInt(contactId, 10));
+        const deleted = await deleteContact(integerFrom(contactId, 'Contact ID', { min: 1 }));
 
         if (!deleted) {
             return NextResponse.json({ error: 'Contact not found' }, { status: 404 });
@@ -43,7 +43,6 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting contact:', error);
-        return NextResponse.json({ error: 'Failed to delete contact' }, { status: 500 });
+        return handleApiError(error, 'Failed to delete contact');
     }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
@@ -21,11 +21,6 @@ const sizeClasses = {
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalProps) {
     const modalRef = useRef<HTMLDivElement>(null);
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
@@ -43,7 +38,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' }:
         };
     }, [isOpen, onClose]);
 
-    if (!isOpen || !mounted) return null;
+    if (!isOpen || typeof document === 'undefined') return null;
 
     const modalContent = (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

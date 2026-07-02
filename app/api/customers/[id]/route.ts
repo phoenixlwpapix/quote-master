@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerById, updateCustomer, deleteCustomer } from '@/lib/models/customer';
 import { getContactsByCustomerId } from '@/lib/models/contact';
+import { handleApiError, integerFrom, optionalString, requiredString } from '@/lib/route-helpers';
 
 export async function GET(
     request: NextRequest,
@@ -8,17 +9,17 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const customer = await getCustomerById(parseInt(id, 10));
+        const customerId = integerFrom(id, 'Customer ID', { min: 1 });
+        const customer = await getCustomerById(customerId);
 
         if (!customer) {
             return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
         }
 
-        const contacts = await getContactsByCustomerId(parseInt(id, 10));
+        const contacts = await getContactsByCustomerId(customerId);
         return NextResponse.json({ ...customer, contacts });
     } catch (error) {
-        console.error('Error fetching customer:', error);
-        return NextResponse.json({ error: 'Failed to fetch customer' }, { status: 500 });
+        return handleApiError(error, 'Failed to fetch customer');
     }
 }
 
@@ -28,14 +29,14 @@ export async function PUT(
 ) {
     try {
         const { id } = await params;
-        const body = await request.json();
+        const body: Record<string, unknown> = await request.json();
 
-        const customer = await updateCustomer(parseInt(id, 10), {
-            name: body.name?.trim(),
-            address: body.address?.trim() || null,
-            website: body.website?.trim() || null,
-            industry: body.industry?.trim() || null,
-            notes: body.notes?.trim() || null,
+        const customer = await updateCustomer(integerFrom(id, 'Customer ID', { min: 1 }), {
+            name: body.name !== undefined ? requiredString(body.name, 'Company name') : undefined,
+            address: optionalString(body.address),
+            website: optionalString(body.website),
+            industry: optionalString(body.industry),
+            notes: optionalString(body.notes),
         });
 
         if (!customer) {
@@ -44,8 +45,7 @@ export async function PUT(
 
         return NextResponse.json(customer);
     } catch (error) {
-        console.error('Error updating customer:', error);
-        return NextResponse.json({ error: 'Failed to update customer' }, { status: 500 });
+        return handleApiError(error, 'Failed to update customer');
     }
 }
 
@@ -55,7 +55,7 @@ export async function DELETE(
 ) {
     try {
         const { id } = await params;
-        const deleted = await deleteCustomer(parseInt(id, 10));
+        const deleted = await deleteCustomer(integerFrom(id, 'Customer ID', { min: 1 }));
 
         if (!deleted) {
             return NextResponse.json({ error: 'Customer not found' }, { status: 404 });
@@ -63,7 +63,6 @@ export async function DELETE(
 
         return NextResponse.json({ success: true });
     } catch (error) {
-        console.error('Error deleting customer:', error);
-        return NextResponse.json({ error: 'Failed to delete customer' }, { status: 500 });
+        return handleApiError(error, 'Failed to delete customer');
     }
 }

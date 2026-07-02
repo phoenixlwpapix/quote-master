@@ -2,7 +2,7 @@ import 'server-only';
 
 import { db } from '../db';
 import { products, categories } from '../schema';
-import { eq, asc, like, or, and, getTableColumns } from 'drizzle-orm';
+import { eq, asc, like, or, and, getTableColumns, isNull } from 'drizzle-orm';
 import type { Product, CreateProductInput, UpdateProductInput } from '../types';
 import { requireUserId } from '../auth/get-user';
 
@@ -14,6 +14,22 @@ function mapProduct(row: typeof products.$inferSelect & { category_name: string 
     updated_at: row.updated_at?.toISOString() ?? new Date().toISOString(),
     category_name: row.category_name ?? undefined,
   };
+}
+
+async function ensureCategoryAccess(categoryId: number | null | undefined, userId: string): Promise<void> {
+  if (!categoryId) return;
+
+  const [category] = await db.select({ id: categories.id })
+    .from(categories)
+    .where(and(
+      eq(categories.id, categoryId),
+      or(eq(categories.user_id, userId), isNull(categories.user_id))
+    ))
+    .limit(1);
+
+  if (!category) {
+    throw new Error('Category not found');
+  }
 }
 
 export async function getAllProducts(categoryId?: number): Promise<Product[]> {
@@ -68,6 +84,7 @@ export async function getProductBySku(sku: string): Promise<Product | undefined>
 
 export async function createProduct(input: CreateProductInput): Promise<Product> {
   const userId = await requireUserId();
+  await ensureCategoryAccess(input.category_id, userId);
 
   const result = await db.insert(products).values({
     user_id: userId,
@@ -90,6 +107,7 @@ export async function createProduct(input: CreateProductInput): Promise<Product>
 
 export async function updateProduct(id: number, input: UpdateProductInput): Promise<Product | undefined> {
   const userId = await requireUserId();
+  await ensureCategoryAccess(input.category_id, userId);
 
   const updated = await db.update(products).set({
     ...input,

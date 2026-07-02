@@ -1,50 +1,51 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Save, Building2, Mail, Phone, MapPin, Globe, FileText, CheckCircle, RefreshCw } from 'lucide-react';
-import { PageSkeleton, Skeleton } from '@/components/Skeleton';
+import { PageSkeleton } from '@/components/Skeleton';
 import { useSettings, useUpdateSettings } from '@/hooks/use-queries';
 import type { CompanySettings } from '@/lib/types';
 
-export default function SettingsPage() {
+type SettingsFormData = {
+    company_name: string;
+    company_email: string;
+    company_phone: string;
+    company_address: string;
+    company_website: string;
+    tax_id: string;
+    logo_url: string;
+    footer_text: string;
+    currency: string;
+};
+
+function settingsToFormData(settings: CompanySettings): SettingsFormData {
+    return {
+        company_name: settings.company_name || '',
+        company_email: settings.company_email || '',
+        company_phone: settings.company_phone || '',
+        company_address: settings.company_address || '',
+        company_website: settings.company_website || '',
+        tax_id: settings.tax_id || '',
+        logo_url: settings.logo_url || '',
+        footer_text: settings.footer_text || '',
+        currency: settings.currency || 'EUR',
+    };
+}
+
+function SettingsForm({ settings, isFetching, onRefresh }: {
+    settings: CompanySettings;
+    isFetching: boolean;
+    onRefresh: () => void;
+}) {
     const [saved, setSaved] = useState(false);
-
-    const [formData, setFormData] = useState({
-        company_name: '',
-        company_email: '',
-        company_phone: '',
-        company_address: '',
-        company_website: '',
-        tax_id: '',
-        logo_url: '',
-        footer_text: '',
-        currency: 'EUR',
-    });
-
-    // 使用 React Query 进行数据管理，缓存在 5 分钟内有效
-    const { data: settings, isLoading, isFetching, refetch } = useSettings();
+    const [error, setError] = useState<string | null>(null);
+    const [formData, setFormData] = useState<SettingsFormData>(() => settingsToFormData(settings));
     const updateSettingsMutation = useUpdateSettings();
-
-    // 当设置数据加载完成后，更新表单
-    useEffect(() => {
-        if (settings) {
-            setFormData({
-                company_name: settings.company_name || '',
-                company_email: settings.company_email || '',
-                company_phone: settings.company_phone || '',
-                company_address: settings.company_address || '',
-                company_website: settings.company_website || '',
-                tax_id: settings.tax_id || '',
-                logo_url: settings.logo_url || '',
-                footer_text: settings.footer_text || '',
-                currency: settings.currency || 'EUR',
-            });
-        }
-    }, [settings]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaved(false);
+        setError(null);
 
         try {
             await updateSettingsMutation.mutateAsync(formData);
@@ -52,14 +53,9 @@ export default function SettingsPage() {
             setTimeout(() => setSaved(false), 3000);
         } catch (error) {
             console.error('Error saving settings:', error);
-            alert('Failed to save settings');
+            setError(error instanceof Error ? error.message : 'Failed to save settings');
         }
     };
-
-    // 显示骨架屏直到数据加载完成
-    if (isLoading) {
-        return <PageSkeleton />;
-    }
 
     return (
         <div className="space-y-6 animate-fade-in max-w-3xl">
@@ -70,7 +66,7 @@ export default function SettingsPage() {
                     <p className="text-slate-400 mt-1">Configure your company information for quotes and orders</p>
                 </div>
                 <button
-                    onClick={() => refetch()}
+                    onClick={onRefresh}
                     disabled={isFetching}
                     className="btn btn-secondary"
                     title="Refresh settings"
@@ -78,6 +74,12 @@ export default function SettingsPage() {
                     <RefreshCw size={18} className={isFetching ? 'animate-spin' : ''} />
                 </button>
             </div>
+
+            {error && (
+                <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {error}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Company Information */}
@@ -298,5 +300,24 @@ export default function SettingsPage() {
                 </div>
             </form>
         </div>
+    );
+}
+
+export default function SettingsPage() {
+    const { data: settings, isLoading, isFetching, refetch } = useSettings();
+
+    if (isLoading || !settings) {
+        return <PageSkeleton />;
+    }
+
+    return (
+        <SettingsForm
+            key={`${settings.id}-${settings.updated_at}`}
+            settings={settings}
+            isFetching={isFetching}
+            onRefresh={() => {
+                void refetch();
+            }}
+        />
     );
 }
